@@ -23,7 +23,9 @@ class Rank {
 
   final int value;
 
-  Rank(this.value) {
-    assert(all.contains(value));
+  bool operator==(other) {
+    return value == other.value;
   }
+
+  Rank(this.value);
 }
