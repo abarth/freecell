@@ -1,0 +1,28 @@
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="fc-card.html">
+<link rel="import" href="fc-pile.html">
+
+<polymer-element name="fc-collapsed-pile" extends="fc-pile">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      img {
+        box-sizing: border-box;
+        border: 2px inset lightgreen;
+      }
+    </style>
+    <template if="{{ !pile.cards.isEmpty }}">
+      <fc-card card="{{ pile.cards[pile.cards.length - 1] }}"></fc-card>
+    </template>
+    <template if="{{ pile.cards.isEmpty }}">
+      <img width="100%" src="svg-cards/none.svg">
+    </template>
+  </template>
+  <script type="application/dart" src="fc-collapsed-pile.dart"></script>
+</polymer-element>

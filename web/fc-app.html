@@ -4,8 +4,9 @@
 
 <link rel="import" href="../packages/polymer/polymer.html">
 
-<link rel="import" href="fc-pile.html">
 <link rel="import" href="fc-card.html">
+<link rel="import" href="fc-collapsed-pile.html">
+<link rel="import" href="fc-column.html">
 
 <polymer-element name="fc-app">
   <template>
@@ -21,53 +22,29 @@
         box-sizing: border-box;
       }
 
-      fc-pile:nth-child(2) {
+      fc-collapsed-pile:nth-child(2) {
         margin-left: 20px;
       }
 
-      fc-pile:nth-child(5) {
+      fc-collapsed-pile:nth-child(5) {
         margin-right: 100px;
       }
 
-      fc-pile:nth-child(10) {
+      fc-collapsed-pile:nth-child(10) {
         margin-right: 20px;
-      }
-
-      fc-card {
-        margin-top: -110%;
-      }
-
-      fc-card:nth-child(2) {
-        margin-top: 0;
-      }
-
-      .column {
-        display: flex;
-        flex: 10;
-        flex-shrink: 0;
-        flex-direction: column;
-        margin-right: 1%;
-      }
-
-      .column:last-child {
-        margin-right: 0;
       }
     </style>
     <div class="piles">
       <template repeat="{{ cell in tableau.cells }}">
-        <fc-pile pile="{{ cell }}"></fc-pile>
+        <fc-collapsed-pile pile="{{ cell }}"></fc-collapsed-pile>
       </template>
       <template repeat="{{ tower in tableau.towers }}">
-        <fc-pile pile="{{ tower }}"></fc-pile>
+        <fc-collapsed-pile pile="{{ tower }}"></fc-collapsed-pile>
       </template>
     </div>
     <div class="columns">
       <template repeat="{{ column in tableau.columns }}">
-        <div class="column">
-          <template repeat="{{ card in column.cards }}">
-            <fc-card card="{{ card }}"></fc-card>
-          </template>
-        </div>
+        <fc-column pile="{{ column }}"></fc-column>
       </template>
     </div>
   </template>
