@@ -21,8 +21,8 @@ class Deck {
       }
     }
   }
-  
-  shuffle() {
+
+  void shuffle() {
     Random rng = new Random();
     for (int i = _cards.length - 1; i > 0; --i) {
       int nextIndex = rng.nextInt(i);
