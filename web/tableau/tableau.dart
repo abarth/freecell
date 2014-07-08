@@ -29,6 +29,10 @@ class Tableau {
         new Iterable.generate(kNumberOfTowers, (i) => new Tower()));
   }
 
+  bool get hasWon() {
+    return towers.every((tower) => tower.isFull);
+  }
+
   void deal(Deck deck) {
     int i = 0;
     while (!deck.isEmpty) {
