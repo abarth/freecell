@@ -4,13 +4,13 @@
 
 <link rel="import" href="packages/polymer/polymer.html">
 
-<link rel="import" href="fc-cell.html">
+<link rel="import" href="fc-pile.html">
 <link rel="import" href="fc-card.html">
 
 <polymer-element name="fc-app">
   <template>
     <style>
-      .columns, .cells {
+      .columns, .piles {
         display: flex;
         padding: 16px;
         box-sizing: border-box;
@@ -37,9 +37,12 @@
         margin-right: 0;
       }
     </style>
-    <div class="cells">
+    <div class="piles">
       <template repeat="{{ cell in tableau.cells }}">
-        <fc-cell cell="{{ cell }}"></fc-cell>
+        <fc-pile pile="{{ cell }}"></fc-pile>
+      </template>
+      <template repeat="{{ tower in tableau.towers }}">
+        <fc-pile pile="{{ tower }}"></fc-pile>
       </template>
     </div>
     <div class="columns">
