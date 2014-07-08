@@ -5,11 +5,13 @@
 part of freecell.tableau;
 
 abstract class Pile {
-  List<Card> cards;
+  ObservableList<Card> cards;
 
   Pile() {
-    cards = new List<Card>();
+    cards = new ObservableList<Card>();
   }
+
+  bool get isEmpty => cards.isEmpty;
 
   bool _canAccept(Card);
   bool _canTake();

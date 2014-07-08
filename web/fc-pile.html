@@ -4,7 +4,7 @@
 
 <link rel="import" href="fc-card.html">
 
-<polymer-element name="fc-pile">
+<polymer-element name="fc-pile" on-drop-card="{{ handleDropCard }}">
   <template>
     <style>
       :host {
@@ -16,10 +16,10 @@
         border: 2px inset lightgreen;
       }
     </style>
-    <template if="{{ card }}">
-      <fc-card card="{{ card }}"></fc-card>
+    <template if="{{ !pile.cards.isEmpty }}">
+      <fc-card card="{{ pile.cards[pile.cards.length - 1] }}"></fc-card>
     </template>
-    <template if="{{ card == null }}">
+    <template if="{{ pile.cards.isEmpty }}">
       <img width="100%" src="svg-cards/none.svg">
     </template>
   </template>

@@ -1,5 +1,6 @@
 import "package:polymer/polymer.dart";
 import 'dart:html';
+import 'dart:js';
 
 import "deck/deck.dart";
 
@@ -14,10 +15,11 @@ class FcCard extends PolymerElement {
     return "svg-cards/${ card.rank.value }_of_${ card.suit.name }.svg";
   }
 
-  void handleDragStart(Event event, var detail, Node target) {
+  void handleDragStart(Event event, JsObject dragInfo, Node target) {
     FcCard target = event.target;
-    Element avatar = detail["avatar"];
+    Element avatar = dragInfo["avatar"];
 
+    // FIXME: The card has a funny clipping rect when dragging.
     avatar.style.setProperty("will-change", "transform");
 
     ImageElement img = document.createElement("img");
@@ -30,11 +32,16 @@ class FcCard extends PolymerElement {
 
     avatar.append(img);
 
-    detail["drag"] = (var event) {
+    dragInfo["drag"] = (var dragInfo) {
 
     };
 
-    detail["drop"] = (var event) {
+    dragInfo["drop"] = (var dragInfo) {
+      // FIXME: Polymer adds this expando, but dart won't let me get it
+      // since it's an expando.
+      var event = new JsObject.fromBrowserObject(dragInfo["event"]);
+      Element relatedTarget = event["relatedTarget"];
+      relatedTarget.dispatchEvent(new CustomEvent("drop-card", detail:this.card));
       img.remove();
     };
   }

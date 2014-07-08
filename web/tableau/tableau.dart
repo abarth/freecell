@@ -4,6 +4,8 @@
 
 library freecell.tableau;
 
+import "package:observe/src/observable_list.dart";
+
 import '../deck/deck.dart';
 
 part 'pile.dart';
