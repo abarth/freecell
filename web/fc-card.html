@@ -1,18 +1,22 @@
 <!-- Copyright 2014 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
-
 <link rel="import" href="packages/polymer/polymer.html">
 
-<polymer-element name="fc-card">
+<link rel="import" href="../packages/polymer/polymer.html">
+<link rel="import" href="../packages/core_elements/core_drag_drop.html">
+
+<polymer-element name="fc-card" on-drag-start="{{ handleDragStart }}">
   <template>
     <style>
       :host {
         display: block;
+        box-sizing: border-box;
       }
     </style>
+    <core-drag-drop></core-drag-drop>
     <template if="{{ card }}">
-      <img width="100%" src="svg-cards/{{ card.rank.value }}_of_{{ card.suit.name }}.svg">
+      <img width="100%" src="{{ card | imageUrl }}" draggable="false">
     </template>
   </template>
   <script type="application/dart" src="fc-card.dart"></script>

@@ -2,6 +2,7 @@ name: freecell
 description: A sample Polymer application
 dependencies:
     polymer: ">=0.11.0 <0.12.0"
+    core_elements: ">=0.0.6 <0.1.0"
 transformers:
 - polymer:
     entry_points: web/freecell.html
