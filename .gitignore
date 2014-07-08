@@ -10,6 +10,7 @@ packages/
 *.js.map
 
 .buildlog
+.DS_Store
 
 # Include when developing application packages.
 pubspec.lock
