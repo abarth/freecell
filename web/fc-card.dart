@@ -4,9 +4,8 @@ import "deck/deck.dart";
 
 @CustomTag("fc-card")
 class FcCard extends PolymerElement {
-  @published Card card = null;
+  @observable Card card;
 
   FcCard.created() : super.created() {
   }
 }
-

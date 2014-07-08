@@ -6,10 +6,39 @@
   <template>
     <style>
       :host {
-        display: block;
+        display: flex;
+        padding: 16px;
+        box-sizing: border-box;
+        background-color: #085700;
+      }
+
+      fc-card {
+        margin-top: -110%;
+      }
+
+      fc-card:nth-child(2) {
+        margin-top: 0;
+      }
+
+      .column {
+        display: flex;
+        flex: 10;
+        flex-shrink: 0;
+        flex-direction: column;
+        margin-right: 1%;
+      }
+
+      .column:last-child {
+        margin-right: 0;
       }
     </style>
-    <fc-card card="{{ card }}"></fc-card>
+    <template repeat="{{ column in tableau.columns }}">
+      <div class="column">
+        <template repeat="{{ card in column.cards }}">
+          <fc-card card="{{ card }}"></fc-card>
+        </template>
+      </div>
+    </template>
   </template>
   <script type="application/dart" src="fc-app.dart"></script>
 </polymer-element>

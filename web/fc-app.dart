@@ -1,12 +1,17 @@
 import "package:polymer/polymer.dart";
 
 import "deck/deck.dart";
+import "tableau/tableau.dart";
 
 @CustomTag("fc-app")
 class FcApp extends PolymerElement {
-  @observable Card card = null;
+  @observable Tableau tableau;
 
   FcApp.created() : super.created() {
-    this.card = new Card(Suit.HEARTS, new Rank(5));
+    Deck deck = new Deck();
+    deck.shuffle();
+
+    tableau = new Tableau();
+    tableau.deal(deck);
   }
 }

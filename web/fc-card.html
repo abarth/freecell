@@ -5,8 +5,14 @@
       :host {
         display: block;
       }
+
+      img {
+        display: flex;
+      }
     </style>
-    <img src="svg-cards/{{ card.rank.value }}_of_{{ card.suit.name }}.svg">
+    <template if="{{ card }}">
+      <img width="100%" src="svg-cards/{{ card.rank.value }}_of_{{ card.suit.name }}.svg">
+    </template>
   </template>
   <script type="application/dart" src="fc-card.dart"></script>
 </polymer-element>
