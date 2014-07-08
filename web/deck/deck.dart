@@ -4,6 +4,31 @@
 
 library freecell.deck;
 
+import 'dart:math';
+
 part 'suit.dart';
 part 'rank.dart';
 part 'card.dart';
+
+class Deck {
+  List<Card> _cards;
+  
+  Deck() {
+    _cards = new List<Card>();
+    for (Suit suit in Suit.all){
+      for (Rank rank in Rank.all) {
+        _cards.add(new Card(suit, rank));
+      }
+    }
+  }
+  
+  shuffle() {
+    Random rng = new Random();
+    for (int i = _cards.length - 1; i > 0; --i) {
+      int nextIndex = rng.nextInt(i);
+      Card nextCard = _cards[nextIndex];
+      _cards[nextIndex] = _cards[i];
+      _cards[i] = nextCard;
+    }
+  }
+}
