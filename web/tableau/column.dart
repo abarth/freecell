@@ -9,11 +9,8 @@ class Column extends Pile {
     if (cards.isEmpty)
       return true;
     Card current = cards.last;
-    if (current.rank.value - 1 != card.rank.value)
-      return false;
-    if (current.suit.color == card.suit.color)
-      return false;
-    return true;
+    return current.rank.value - 1 == card.rank.value
+        && current.suit.color != card.suit.color;
   }
 
   bool _canTake() => true;
