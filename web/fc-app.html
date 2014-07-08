@@ -10,11 +10,27 @@
 <polymer-element name="fc-app">
   <template>
     <style>
+      :host {
+        display: block;
+        background-color: #085700;
+      }
+
       .columns, .piles {
         display: flex;
         padding: 16px;
         box-sizing: border-box;
-        background-color: #085700;
+      }
+
+      fc-pile:nth-child(2) {
+        margin-left: 20px;
+      }
+
+      fc-pile:nth-child(5) {
+        margin-right: 100px;
+      }
+
+      fc-pile:nth-child(10) {
+        margin-right: 20px;
       }
 
       fc-card {

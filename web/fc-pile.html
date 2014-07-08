@@ -6,7 +6,22 @@
 
 <polymer-element name="fc-pile">
   <template>
-    <fc-card card="{{ card }}"></fc-card>
+    <style>
+      :host {
+        display: block;
+      }
+
+      img {
+        box-sizing: border-box;
+        border: 2px inset lightgreen;
+      }
+    </style>
+    <template if="{{ card }}">
+      <fc-card card="{{ card }}"></fc-card>
+    </template>
+    <template if="{{ card == null }}">
+      <img width="100%" src="svg-cards/none.svg">
+    </template>
   </template>
   <script type="application/dart" src="fc-pile.dart"></script>
 </polymer-element>
