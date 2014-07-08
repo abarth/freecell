@@ -21,12 +21,12 @@ class Tableau {
   List<Tower> towers;
 
   Tableau() {
-    columns = new List<Column>.from(
-        new Iterable.generate(kNumberOfColumns, (i) => new Column()));
-    cells = new List<Cell>.from(
-        new Iterable.generate(kNumberOfCells, (i) => new Cell()));
-    towers = new List<Tower>.from(
-        new Iterable.generate(kNumberOfTowers, (i) => new Tower()));
+    columns = (new Iterable.generate(
+        kNumberOfColumns, (i) => new Column())).toList();
+    cells = (new Iterable.generate(
+        kNumberOfCells, (i) => new Cell())).toList();
+    towers = (new Iterable.generate(
+        kNumberOfTowers, (i) => new Tower())).toList();
   }
 
   bool get hasWon {

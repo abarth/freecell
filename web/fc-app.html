@@ -1,11 +1,16 @@
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
 <link rel="import" href="packages/polymer/polymer.html">
 
+<link rel="import" href="fc-cell.html">
 <link rel="import" href="fc-card.html">
 
 <polymer-element name="fc-app">
   <template>
     <style>
-      :host {
+      .columns {
         display: flex;
         padding: 16px;
         box-sizing: border-box;
@@ -32,13 +37,18 @@
         margin-right: 0;
       }
     </style>
-    <template repeat="{{ column in tableau.columns }}">
-      <div class="column">
-        <template repeat="{{ card in column.cards }}">
-          <fc-card card="{{ card }}"></fc-card>
-        </template>
-      </div>
+    <template repeat="cell in tableau.cells">
+      <fc-cell cell="{{ cell }}"></fc-cell>
     </template>
+    <div class="columns">
+      <template repeat="{{ column in tableau.columns }}">
+        <div class="column">
+          <template repeat="{{ card in column.cards }}">
+            <fc-card card="{{ card }}"></fc-card>
+          </template>
+        </div>
+      </template>
+    </div>
   </template>
   <script type="application/dart" src="fc-app.dart"></script>
 </polymer-element>
