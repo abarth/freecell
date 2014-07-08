@@ -12,7 +12,7 @@ part 'card.dart';
 
 class Deck {
   List<Card> _cards;
-  
+
   Deck() {
     _cards = new List<Card>();
     for (Suit suit in Suit.all){
@@ -22,7 +22,13 @@ class Deck {
     }
   }
 
+<<<<<<< Updated upstream
   void shuffle() {
+=======
+  shuffle() {
+    if (_cards.isEmpty)
+      return;
+>>>>>>> Stashed changes
     Random rng = new Random();
     for (int i = _cards.length - 1; i > 0; --i) {
       int nextIndex = rng.nextInt(i);
@@ -30,5 +36,9 @@ class Deck {
       _cards[nextIndex] = _cards[i];
       _cards[i] = nextCard;
     }
+  }
+
+  Card takeNext() {
+    return _cards.removeLast();
   }
 }
