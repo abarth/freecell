@@ -14,4 +14,6 @@ class Tower extends Pile {
   }
 
   bool _canTake() => false;
+
+  bool get isFull => cards.length == 13;
 }
