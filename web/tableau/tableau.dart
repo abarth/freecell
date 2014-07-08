@@ -8,17 +8,20 @@ import '../deck/deck.dart';
 
 part 'pile.dart';
 part 'column.dart';
+part 'cell.dart';
 
 const int kNumberOfColumns = 8;
 const int kNumberOfCells = 4;
 
 class Tableau {
   List<Column> columns;
-  List<Column> columns;
+  List<Cell> cells;
 
   Tableau() {
     columns = new List<Column>.from(
         new Iterable.generate(kNumberOfColumns, (i) => new Column()));
+    cells = new List<Cell>.from(
+        new Iterable.generate(kNumberOfCells, (i) => new Cell()));
   }
 
   void deal(Deck deck) {
