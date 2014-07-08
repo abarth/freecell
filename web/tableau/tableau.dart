@@ -6,6 +6,7 @@ library freecell.tableau;
 
 import '../deck/deck.dart';
 
+part 'pile.dart';
 part 'column.dart';
 
 const int kNumberOfColumns = 8;
