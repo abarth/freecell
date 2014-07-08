@@ -13,5 +13,5 @@ class Column extends Pile {
         && current.suit.color != card.suit.color;
   }
 
-  bool _canTake() => true;
+  bool _canTake() => !cards.isEmpty;
 }

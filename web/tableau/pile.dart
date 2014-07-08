@@ -22,8 +22,6 @@ abstract class Pile {
   }
 
   Card take() {
-    if (cards.isEmpty)
-      return null;
     if (!_canTake())
       return null;
     return cards.removeLast();

@@ -10,8 +10,10 @@ part 'pile.dart';
 part 'column.dart';
 
 const int kNumberOfColumns = 8;
+const int kNumberOfCells = 4;
 
 class Tableau {
+  List<Column> columns;
   List<Column> columns;
 
   Tableau() {
