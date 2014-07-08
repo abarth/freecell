@@ -22,13 +22,9 @@ class Deck {
     }
   }
 
-<<<<<<< Updated upstream
   void shuffle() {
-=======
-  shuffle() {
     if (_cards.isEmpty)
       return;
->>>>>>> Stashed changes
     Random rng = new Random();
     for (int i = _cards.length - 1; i > 0; --i) {
       int nextIndex = rng.nextInt(i);
