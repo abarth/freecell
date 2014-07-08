@@ -4,4 +4,17 @@
 
 library freecell.tableau;
 
+import '../deck/deck.dart';
+
 part 'column.dart';
+
+const int kNumberOfColumns = 8;
+
+class Tableau {
+  List<Column> columns;
+
+  Tableau() {
+    columns = new List<Column>.from(
+        new Iterable.generate(kNumberOfColumns, (i) => new Column()));
+  }
+}

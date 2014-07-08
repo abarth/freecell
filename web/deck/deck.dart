@@ -6,6 +6,7 @@ library freecell.deck;
 
 import 'dart:math';
 
+part 'color.dart';
 part 'suit.dart';
 part 'rank.dart';
 part 'card.dart';

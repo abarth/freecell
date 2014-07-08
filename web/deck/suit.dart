@@ -12,6 +12,18 @@ class Suit {
 
   static get all => [CLUBS, DIAMONDS, HEARTS, SPADES];
 
+  Color get color {
+    switch(this) {
+      case CLUBS:
+      case SPADES:
+        return Color.BLACK;
+      case DIAMONDS:
+      case HEARTS:
+        return Color.RED;
+    }
+    return null;
+  }
+
   final String name;
 
   const Suit._(this.name);
