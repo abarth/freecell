@@ -6,8 +6,7 @@
         display: block;
       }
     </style>
-    Suit: {{ card.suit.name }}
-    Rank: {{ card.rank.value }}
+    <img src="svg-cards/{{ card.rank.value }}_of_{{ card.suit.name }}.svg">
   </template>
   <script type="application/dart" src="fc-card.dart"></script>
 </polymer-element>
