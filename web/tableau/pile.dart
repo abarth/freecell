@@ -28,4 +28,8 @@ abstract class Pile {
       return null;
     return cards.removeLast();
   }
+
+  void _deal(Card card) {
+    cards.add(card);
+  }
 }

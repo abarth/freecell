@@ -35,6 +35,8 @@ class Deck {
     }
   }
 
+  bool get isEmpty => _cards.isEmpty;
+
   Card takeNext() {
     return _cards.removeLast();
   }

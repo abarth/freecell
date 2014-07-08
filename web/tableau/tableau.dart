@@ -18,4 +18,13 @@ class Tableau {
     columns = new List<Column>.from(
         new Iterable.generate(kNumberOfColumns, (i) => new Column()));
   }
+
+  void deal(Deck deck) {
+    int i = 0;
+    while (!deck.isEmpty) {
+      Card card = deck.takeNext();
+      columns[i]._deal(card);
+      i = (i + 1) % kNumberOfColumns;
+    }
+  }
 }
