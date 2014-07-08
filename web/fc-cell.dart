@@ -6,16 +6,12 @@ import "tableau/tableau.dart";
 @CustomTag("fc-cell")
 class FcCell extends PolymerElement {
   @published Cell cell;
-  Card card;
+  @observable Card card;
 
   FcCell.created() : super.created() {
-    card = new Card(Suit.SPADES, new Rank(5));
   }
 
-  void cellChanged() {
-    if (cell.cards.isEmpty)
-      card = new Card(Suit.SPADES, new Rank(1));
-    else
-      card = cell.cards.last;
+  void cellChanged(Cell oldValue, Cell newValue) {
+    card = cell.cards.isEmpty ? null : cell.cards.last;
   }
 }

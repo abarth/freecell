@@ -10,7 +10,7 @@
 <polymer-element name="fc-app">
   <template>
     <style>
-      .columns {
+      .columns, .cells {
         display: flex;
         padding: 16px;
         box-sizing: border-box;
@@ -37,9 +37,11 @@
         margin-right: 0;
       }
     </style>
-    <template repeat="cell in tableau.cells">
-      <fc-cell cell="{{ cell }}"></fc-cell>
-    </template>
+    <div class="cells">
+      <template repeat="{{ cell in tableau.cells }}">
+        <fc-cell cell="{{ cell }}"></fc-cell>
+      </template>
+    </div>
     <div class="columns">
       <template repeat="{{ column in tableau.columns }}">
         <div class="column">
