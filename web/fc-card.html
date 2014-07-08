@@ -1,0 +1,14 @@
+<link rel="import" href="packages/polymer/polymer.html">
+<polymer-element name="fc-card" attributes="card">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    Suit: {{ card.suit.name }}
+    Rank: {{ card.rank.value }}
+  </template>
+  <script type="application/dart" src="fc-card.dart"></script>
+</polymer-element>
+

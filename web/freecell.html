@@ -1,26 +1,15 @@
 <!DOCTYPE html>
 
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freecell</title>
-    <script src="packages/web_components/platform.js"></script>
-    <script src="packages/web_components/dart_support.js"></script>
-    <link rel="import" href="clickcounter.html">
-    <script type="application/dart">export 'package:polymer/init.dart';</script>
-    <script src="packages/browser/dart.js"></script>
-    
-    <link rel="stylesheet" href="freecell.css">
-  </head>
-  <body>
-    <h1>Freecell</h1>
-    
-    <p>Hello world from Dart!</p>
-    
-    <div id="sample_container_id">
-      <click-counter count="5"></click-counter>
-    </div>
+<title>Freecell</title>
 
-  </body>
-</html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="packages/web_components/platform.js"></script>
+<script src="packages/web_components/dart_support.js"></script>
+
+<link rel="import" href="fc-app.html">
+
+<script type="application/dart">export 'package:polymer/init.dart';</script>
+<script src="packages/browser/dart.js"></script>
+
+<fc-app></fc-app>
