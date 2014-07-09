@@ -10,23 +10,17 @@
     <style>
       :host {
         display: block;
+        background-color: darkgreen;
       }
-
       img {
-        box-sizing: border-box;
-        border: 2px inset lightgreen;
-      }
-
-      fc-card {
-        box-sizing: border-box;
-        margin: 2px;
+        width: 100%;
       }
     </style>
     <template if="{{ !pile.cards.isEmpty }}">
       <fc-card card="{{ pile.cards[pile.cards.length - 1] }}"></fc-card>
     </template>
     <template if="{{ pile.cards.isEmpty }}">
-      <img width="100%" src="svg-cards/none.svg">
+      <img src="svg-cards/none.svg">
     </template>
   </template>
   <script type="application/dart" src="fc-collapsed-pile.dart"></script>
