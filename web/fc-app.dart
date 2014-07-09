@@ -1,5 +1,8 @@
 import "package:polymer/polymer.dart";
 
+import "dart:html";
+import "dart:js";
+
 import "deck/deck.dart";
 import "tableau/tableau.dart";
 
@@ -13,5 +16,14 @@ class FcApp extends PolymerElement {
 
     tableau = new Tableau();
     tableau.deal(deck);
+  }
+
+  void handlePlaceCard(CustomEvent event, Card card) {
+    for (Tower tower in tableau.towers) {
+      if (tower.accept(card)) {
+        event.preventDefault();
+        return;
+      }
+    }
   }
 }

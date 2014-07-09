@@ -21,12 +21,22 @@ class FcPile extends PolymerElement {
     this.shadowRoots.forEach((String className, ShadowRoot root) {
       root.on["drop-card"].listen(handleDropCard);
       root.on["drag-start"].listen(handleDragStart);
+      root.on["dblclick"].listen(handleDoubleClick);
     });
   }
 
   void handleDropCard(CustomEvent event) {
     if (pile.accept(event.detail))
       event.preventDefault();
+  }
+
+  void handleDoubleClick(Event event) {
+    FcCard target = event.target;
+    Card card = target.card;
+    if (!pile.canTake(card))
+      return;
+    if (!dispatchEvent(new CustomEvent("place-card", detail:card)))
+      pile.cards.remove(card);
   }
 
   void handleDragStart(CustomEvent event) {
