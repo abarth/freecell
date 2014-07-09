@@ -43,8 +43,18 @@ class FcPile extends PolymerElement {
 
   void _stopDragging(Element element) {
     element.style.setProperty("will-change", "");
-    element.style.transform = "";
     element.style.pointerEvents = "";
+    element.style.boxShadow = "";
+    element.style.backgroundColor = "";
+
+    element.style.transform = "";
+  }
+
+  void _startDragging(Element element) {
+    element.style.setProperty("will-change", "transform");
+    element.style.pointerEvents = "none";
+    element.style.boxShadow = "0 0 3px 3px #FFFFCC";
+    element.style.backgroundColor = "#FFFFCC";
   }
 
   void handleDrag(CustomEvent event) {
@@ -58,9 +68,9 @@ class FcPile extends PolymerElement {
       return;
     }
 
-    target.style.setProperty("will-change", "transform");
+    if (target.style.pointerEvents == "")
+      _startDragging(target);
     target.style.transform = "translate(${dragInfo.delta.x}px, ${dragInfo.delta.y}px)";
-    target.style.pointerEvents = "none";
   }
 
   void handleDrop(CustomEvent event) {
