@@ -7,6 +7,7 @@
 <link rel="import" href="fc-card.html">
 <link rel="import" href="fc-collapsed-pile.html">
 <link rel="import" href="fc-column.html">
+<link rel="import" href="fc-card-coordinator.html">
 
 <polymer-element name="fc-app" on-place-card="{{ handlePlaceCard }}">
   <template>
@@ -45,6 +46,7 @@
         margin-right: 0;
       }
     </style>
+    <fc-card-coordinator id="cardCoordinator" on-cards-loaded="{{ handleCardsLoaded }}"></fc-card-coordinator>
     <div class="piles">
       <template repeat="{{ cell in tableau.cells }}">
         <fc-collapsed-pile pile="{{ cell }}"></fc-collapsed-pile>

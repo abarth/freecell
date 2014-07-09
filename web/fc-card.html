@@ -15,10 +15,15 @@
         display: block;
         box-sizing: border-box;
       }
+
+      :host([hidden]) {
+        display: block;
+        visibility: hidden;
+      }
     </style>
     <fc-drag-drop></fc-drag-drop>
     <template if="{{ card }}">
-      <img width="100%" src="{{ card | formatUrl }}" draggable="false">
+      <img width="100%" on-load="{{ handleLoad }}" src="{{ card | formatUrl }}" draggable="false">
     </template>
   </template>
   <script type="application/dart" src="fc-card.dart"></script>

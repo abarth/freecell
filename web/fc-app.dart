@@ -4,6 +4,7 @@ import "dart:html";
 
 import "deck/deck.dart";
 import "tableau/tableau.dart";
+import "fc-card.dart";
 
 @CustomTag("fc-app")
 class FcApp extends PolymerElement {
@@ -15,6 +16,15 @@ class FcApp extends PolymerElement {
 
     tableau = new Tableau();
     tableau.deal(deck);
+    async((double time) {
+      $["cardCoordinator"].notifyWhenReady();
+    });
+  }
+
+  void handleCardsLoaded(CustomEvent event, List<FcCard> cards) {
+    cards.forEach((FcCard card) {
+      card.hidden = false;
+    });
   }
 
   void handlePlaceCard(CustomEvent event, Card card) {
