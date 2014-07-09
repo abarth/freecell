@@ -23,7 +23,7 @@
       }
     </style>
     <template repeat="{{ card in pile.cards }}">
-      <fc-card card="{{ card }}" hidden></fc-card>
+      <fc-card card="{{ card }}"></fc-card>
     </template>
     <template if="{{ pile.cards.isEmpty }}">
       <img width="100%" src="svg-cards/none.svg">

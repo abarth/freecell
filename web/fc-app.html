@@ -45,6 +45,10 @@
       fc-column:last-child {
         margin-right: 0;
       }
+
+      :host(.loading) /deep/ fc-card {
+        visibility: hidden;
+      }
     </style>
     <fc-card-coordinator id="cardCoordinator" on-cards-loaded="{{ handleCardsLoaded }}"></fc-card-coordinator>
     <div class="piles">

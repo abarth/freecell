@@ -1,6 +1,7 @@
 import "package:polymer/polymer.dart";
 
 import "dart:html";
+import "dart:js";
 
 import "deck/deck.dart";
 import "tableau/tableau.dart";
@@ -16,15 +17,19 @@ class FcApp extends PolymerElement {
 
     tableau = new Tableau();
     tableau.deal(deck);
+    classes.add("loading");
     async((double time) {
       $["cardCoordinator"].notifyWhenReady();
     });
   }
 
   void handleCardsLoaded(CustomEvent event, List<FcCard> cards) {
-    cards.forEach((FcCard card) {
-      card.hidden = false;
-    });
+    classes.remove("loading");
+  }
+
+  void playAnimation(Element target, List<Map<String, String>> keyFrames, Map<String, dynamic> timingInfo) {
+    new JsObject.fromBrowserObject(target).callMethod("animate",
+        [new JsObject.jsify(keyFrames), new JsObject.jsify(timingInfo)]);
   }
 
   void handlePlaceCard(CustomEvent event, Card card) {
