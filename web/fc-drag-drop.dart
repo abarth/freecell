@@ -5,16 +5,16 @@ import "dart:math";
 import "dart:async";
 
 class FcDragInfo {
-  Point location;
+  Point delta;
 
-  FcDragInfo(this.location);
+  FcDragInfo(this.delta);
 }
 
 class FcDropInfo {
-  Point location;
+  Point delta;
   Element zone;
 
-  FcDropInfo(this.location, this.zone);
+  FcDropInfo(this.delta, this.zone);
 }
 
 @CustomTag("fc-drag-drop")

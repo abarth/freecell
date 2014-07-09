@@ -40,30 +40,33 @@ class FcPile extends PolymerElement {
       pile.cards.remove(card);
   }
 
+  void _stopDragging(Element element) {
+    element.style.setProperty("will-change", "");
+    element.style.transform = "";
+    element.style.pointerEvents = "";
+  }
+
   void handleDrag(CustomEvent event) {
     FcDragInfo dragInfo = event.detail;
     FcCard target = event.target;
     Card card = target.card;
 
     if (!pile.canTake(card)) {
-      target.style.setProperty("will-change", "");
-      target.style.transform = "";
+      _stopDragging(target);
       event.preventDefault();
       return;
     }
 
     target.style.setProperty("will-change", "transform");
-    target.style.transform = "translate(${dragInfo.location.x}px, ${dragInfo.location.y}px)";
+    target.style.transform = "translate(${dragInfo.delta.x}px, ${dragInfo.delta.y}px)";
+    target.style.pointerEvents ="none";
   }
 
   void handleDrop(CustomEvent event) {
     FcDropInfo dropInfo = event.detail;
     FcCard target = event.target;
-    Element zone = dropInfo.zone;
-    Card card = target.card;
-    target.style.setProperty("will-change", "");
-    target.style.transform = "";
-    if (!zone.dispatchEvent(new CustomEvent("drop-card", detail:target.card)))
+    _stopDragging(target);
+    if (!dropInfo.zone.dispatchEvent(new CustomEvent("drop-card", detail:target.card)))
       pile.cards.remove(target.card);
   }
 }
