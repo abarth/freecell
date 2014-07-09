@@ -41,15 +41,13 @@ class FcDragDrop extends PolymerElement {
   }
 
   void handleTrackStart(Event event) {
-    dragging = true;
-    fire("fc-drag", detail:new FcDragInfo(new Point(0, 0)));
+    dragging = !fire("fc-drag", detail:new FcDragInfo(new Point(0, 0))).defaultPrevented;
   }
 
   void handleTrack(Event event) {
     if (!dragging)
       return;
-    if (fire("fc-drag", detail:new FcDragInfo(_pointFromEvent(event))).defaultPrevented)
-      dragging = false;
+    dragging = !fire("fc-drag", detail:new FcDragInfo(_pointFromEvent(event))).defaultPrevented;
   }
 
   void handleTrackEnd(Event event) {
