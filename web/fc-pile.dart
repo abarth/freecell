@@ -2,6 +2,7 @@ import "package:polymer/polymer.dart";
 import "dart:html";
 import "dart:js";
 
+import "deck/deck.dart";
 import "tableau/tableau.dart";
 
 import "fc-card.dart";
@@ -24,7 +25,7 @@ class FcPile extends PolymerElement {
   }
 
   void handleDropCard(CustomEvent event) {
-    if (!pile.accept(event.detail))
+    if (pile.accept(event.detail))
       event.preventDefault();
   }
 
@@ -32,6 +33,10 @@ class FcPile extends PolymerElement {
     JsObject dragInfo = new JsObject.fromBrowserObject(event)["detail"];
     FcCard target = event.target;
     Element avatar = dragInfo["avatar"];
+    Card card = target.card;
+
+    if (!pile.canTake(card))
+      return;
 
     // FIXME: The card has a funny clipping rect when dragging.
     avatar.style.setProperty("will-change", "transform");
@@ -46,15 +51,18 @@ class FcPile extends PolymerElement {
 
     avatar.append(img);
 
-    dragInfo["drag"] = (var dragInfo) { };
+    dragInfo["drag"] = (var dragInfo) {
+      target.style.visibility = "hidden";
+    };
 
     dragInfo["drop"] = (var dragInfo) {
       // FIXME: Polymer adds this expando, but dart won't let me get it
       // since it's an expando.
       var event = new JsObject.fromBrowserObject(dragInfo["event"]);
       Element relatedTarget = event["relatedTarget"];
-      if (relatedTarget.dispatchEvent(new CustomEvent("drop-card", detail:target.card)))
+      if (!relatedTarget.dispatchEvent(new CustomEvent("drop-card", detail:target.card)))
         pile.cards.remove(target.card);
+      target.style.visibility = "";
       img.remove();
     };
   }

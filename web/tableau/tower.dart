@@ -13,7 +13,7 @@ class Tower extends Pile {
         && current.suit == card.suit;
   }
 
-  bool _canTake() => false;
+  bool canTake(Card card) => false;
 
   bool get isFull => cards.length == 13;
 }

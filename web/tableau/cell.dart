@@ -6,5 +6,5 @@ part of freecell.tableau;
 
 class Cell extends Pile {
   bool _canAccept(Card card) => cards.isEmpty;
-  bool _canTake() => !cards.isEmpty;
+  bool canTake(Card card) => true;
 }
