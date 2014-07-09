@@ -1,7 +1,6 @@
 import "package:polymer/polymer.dart";
 
 import "dart:html";
-import "dart:js";
 
 import "deck/deck.dart";
 import "tableau/tableau.dart";
