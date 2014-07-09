@@ -6,6 +6,8 @@
 <link rel="import" href="../packages/polymer/polymer.html">
 <link rel="import" href="../packages/core_elements/core_drag_drop.html">
 
+<link rel="import" href="fc-drag-drop.html">
+
 <polymer-element name="fc-card">
   <template>
     <style>
@@ -14,7 +16,7 @@
         box-sizing: border-box;
       }
     </style>
-    <core-drag-drop></core-drag-drop>
+    <fc-drag-drop></fc-drag-drop>
     <template if="{{ card }}">
       <img width="100%" src="{{ card | formatUrl }}" draggable="false">
     </template>

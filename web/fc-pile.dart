@@ -1,11 +1,11 @@
 import "package:polymer/polymer.dart";
 import "dart:html";
-import "dart:js";
 
 import "deck/deck.dart";
 import "tableau/tableau.dart";
 
 import "fc-card.dart";
+import "fc-drag-drop.dart";
 
 @CustomTag("fc-pile")
 class FcPile extends PolymerElement {
@@ -20,7 +20,8 @@ class FcPile extends PolymerElement {
   void attached() {
     this.shadowRoots.forEach((String className, ShadowRoot root) {
       root.on["drop-card"].listen(handleDropCard);
-      root.on["drag-start"].listen(handleDragStart);
+      root.on["fc-drag"].listen(handleDrag);
+      root.on["fc-drop"].listen(handleDrop);
       root.on["dblclick"].listen(handleDoubleClick);
     });
   }
@@ -39,41 +40,30 @@ class FcPile extends PolymerElement {
       pile.cards.remove(card);
   }
 
-  void handleDragStart(CustomEvent event) {
-    JsObject dragInfo = new JsObject.fromBrowserObject(event)["detail"];
+  void handleDrag(CustomEvent event) {
+    FcDragInfo dragInfo = event.detail;
     FcCard target = event.target;
-    Element avatar = dragInfo["avatar"];
     Card card = target.card;
 
-    if (!pile.canTake(card))
+    if (!pile.canTake(card)) {
+      target.style.setProperty("will-change", "");
+      target.style.transform = "";
+      event.preventDefault();
       return;
+    }
 
-    // FIXME: The card has a funny clipping rect when dragging.
-    avatar.style.setProperty("will-change", "transform");
+    target.style.setProperty("will-change", "transform");
+    target.style.transform = "translate(${dragInfo.location.x}px, ${dragInfo.location.y}px)";
+  }
 
-    ImageElement img = document.createElement("img");
-    img.src = target.url;
-
-    Rectangle rect = target.getBoundingClientRect();
-    img.style.width = "${rect.width}px";
-    img.style.height = "${rect.height}px";
-    img.style.transform = "translate(-50%, -50%)";
-
-    avatar.append(img);
-
-    dragInfo["drag"] = (var dragInfo) {
-      target.style.visibility = "hidden";
-    };
-
-    dragInfo["drop"] = (var dragInfo) {
-      // FIXME: Polymer adds this expando, but dart won't let me get it
-      // since it's an expando.
-      var event = new JsObject.fromBrowserObject(dragInfo["event"]);
-      Element relatedTarget = event["relatedTarget"];
-      if (!relatedTarget.dispatchEvent(new CustomEvent("drop-card", detail:target.card)))
-        pile.cards.remove(target.card);
-      target.style.visibility = "";
-      img.remove();
-    };
+  void handleDrop(CustomEvent event) {
+    FcDropInfo dropInfo = event.detail;
+    FcCard target = event.target;
+    Element zone = dropInfo.zone;
+    Card card = target.card;
+    target.style.setProperty("will-change", "");
+    target.style.transform = "";
+    if (!zone.dispatchEvent(new CustomEvent("drop-card", detail:target.card)))
+      pile.cards.remove(target.card);
   }
 }

@@ -4,22 +4,24 @@ import "dart:js";
 import "dart:math";
 import "dart:async";
 
-class FcDragDetail {
+class FcDragInfo {
   Point location;
 
-  FcDragDetail(this.location);
+  FcDragInfo(this.location);
 }
 
-class FcDropDetail {
+class FcDropInfo {
   Point location;
   Element zone;
 
-  FcDropDetail(this.location, this.zone);
+  FcDropInfo(this.location, this.zone);
 }
 
 @CustomTag("fc-drag-drop")
 class FcDragDrop extends PolymerElement {
   @observable bool dragging = false;
+
+  Point _start;
 
   StreamSubscription trackStartListener;
   StreamSubscription trackListener;
@@ -40,28 +42,33 @@ class FcDragDrop extends PolymerElement {
     trackEndListener.cancel();
   }
 
-  void handleTrackStart(CustomEvent event) {
-    this.dragging = true;
+  void handleTrackStart(Event event) {
+    dragging = true;
+    _start = _pointFromEvent(event);
+    fire("fc-drag", detail:new FcDragInfo(new Point(0, 0)));
   }
 
-  void handleTrack(CustomEvent event) {
-    if (!this.dragging)
+  void handleTrack(Event event) {
+    if (!dragging)
       return;
-    this.fire("fc-drag", detail:new FcDragDetail(_pointFromEvent(event)));
+    Point location = _pointFromEvent(event);
+    if (fire("fc-drag", detail:new FcDragInfo(location - _start)).defaultPrevented)
+      dragging = false;
   }
 
-  void handleTrackEnd(CustomEvent event) {
-    if (!this.dragging)
+  void handleTrackEnd(Event event) {
+    if (!dragging)
       return;
-    this.fire("fc-drop", detail:new FcDropDetail(_pointFromEvent(event), _relatedTargetFromEvent(event)));
+    Point location = _pointFromEvent(event);
+    fire("fc-drop", detail:new FcDropInfo(location - _start, _relatedTargetFromEvent(event)));
   }
 
-  Point _pointFromEvent(CustomEvent event) {
+  Point _pointFromEvent(Event event) {
     JsObject rawEvent = new JsObject.fromBrowserObject(event);
     return new Point(rawEvent["clientX"], rawEvent["clientY"]);
   }
 
-  Element _relatedTargetFromEvent(CustomEvent event) {
+  Element _relatedTargetFromEvent(Event event) {
     JsObject rawEvent = new JsObject.fromBrowserObject(event);
     return rawEvent["relatedTarget"];
   }
