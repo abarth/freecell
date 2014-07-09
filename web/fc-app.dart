@@ -25,5 +25,11 @@ class FcApp extends PolymerElement {
         return;
       }
     }
+    for (Cell cell in tableau.cells) {
+      if (cell.accept(card)) {
+        event.preventDefault();
+        return;
+      }
+    }
   }
 }
