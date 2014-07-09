@@ -24,18 +24,18 @@ class FcDragDrop extends PolymerElement {
     trackEndListener.cancel();
   }
 
-  void handleTrackStart(Event event) {
+  void handleTrackStart(CustomEvent event) {
     this.fire("drag-start");
     this.dragging = true;
   }
 
-  void handleTrack(Event event) {
+  void handleTrack(CustomEvent event) {
     if (!this.dragging)
       return;
     // FIXME: Compute the x, y here and call drag().
   }
 
-  void handleTrackEnd(Event event) {
+  void handleTrackEnd(CustomEvent event) {
     if (!this.dragging)
       return;
     this.dragging = false;
