@@ -16,6 +16,11 @@
         box-sizing: border-box;
         border: 2px inset lightgreen;
       }
+
+      fc-card {
+        box-sizing: border-box;
+        margin: 2px;
+      }
     </style>
     <template if="{{ !pile.cards.isEmpty }}">
       <fc-card card="{{ pile.cards[pile.cards.length - 1] }}"></fc-card>
