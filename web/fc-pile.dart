@@ -1,5 +1,6 @@
 import "package:polymer/polymer.dart";
 import "dart:html";
+import "dart:async";
 
 import "deck/deck.dart";
 import "tableau/tableau.dart";
@@ -66,7 +67,15 @@ class FcPile extends PolymerElement {
     FcDropInfo dropInfo = event.detail;
     FcCard target = event.target;
     _stopDragging(target);
-    if (!dropInfo.zone.dispatchEvent(new CustomEvent("drop-card", detail:target.card)))
+    if (!dropInfo.zone.dispatchEvent(new CustomEvent("drop-card", detail:target.card))) {
       pile.cards.remove(target.card);
+    } else {
+      target.style.transition = "transform 300ms ease-in-out";
+      StreamSubscription listener;
+      listener = target.onTransitionEnd.listen((Event event) {
+        target.style.transition = "";
+        listener.cancel();
+      });
+    }
   }
 }
