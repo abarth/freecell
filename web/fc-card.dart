@@ -8,16 +8,39 @@ import "fc-card-coordinator.dart";
 @CustomTag("fc-card")
 class FcCard extends PolymerElement {
   @published Card card;
-  Completer<FcCard> _completer = new Completer();
+  Completer<FcCard> _completer;
+  bool isAttached = false;
 
   FcCard.created() : super.created() {
   }
 
   void attached() {
-    FcCardCoordinator.addCard(_completer.future);
+    isAttached = true;
+    _registerCard();
   }
 
   void detached() {
+    isAttached = false;
+    _unregisterCard();
+  }
+
+  void cardChanged(Card oldValue, Card newValue) {
+    if (!isAttached)
+      return;
+    _unregisterCard();
+    _registerCard();
+  }
+
+  void _registerCard() {
+    if (card == null)
+      return;
+    _completer = new Completer();
+    FcCardCoordinator.addCard(_completer.future);
+  }
+
+  void _unregisterCard() {
+    if (_completer == null)
+      return;
     FcCardCoordinator.removeCard(_completer.future);
   }
 
