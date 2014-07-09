@@ -60,7 +60,7 @@ class FcPile extends PolymerElement {
 
     target.style.setProperty("will-change", "transform");
     target.style.transform = "translate(${dragInfo.delta.x}px, ${dragInfo.delta.y}px)";
-    target.style.pointerEvents ="none";
+    target.style.pointerEvents = "none";
   }
 
   void handleDrop(CustomEvent event) {
