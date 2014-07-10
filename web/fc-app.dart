@@ -42,8 +42,8 @@ class FcApp extends PolymerElement {
         "transform": "translate(0, 0)",
         "zIndex": "${count}"
       }], {
-        "duration": 500,
-        "delay": --count * 100,
+        "duration": 300,
+        "delay": --count * 75,
         "fill": "backwards",
         "easing": "ease-in-out",
       });
