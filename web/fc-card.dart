@@ -1,6 +1,7 @@
 import "package:polymer/polymer.dart";
 import "dart:async";
 import "dart:html";
+import "dart:math";
 
 import "deck/deck.dart";
 import "viewmodel/viewmodel.dart";
@@ -14,6 +15,8 @@ class FcCard extends PolymerElement {
   bool isAttached = false;
 
   static const double _kSettleVelocity = 1.5; // dips per ms
+  static const double _kMinSettleDuration = 200.0; // ms
+  static const double _kMaxSettleDuration = 500.0; // ms
 
   FcCard.created() : super.created() {
   }
@@ -33,7 +36,7 @@ class FcCard extends PolymerElement {
       if (displacement == null)
         return;
       double distance = displacement.magnitude;
-      double duration = distance / _kSettleVelocity;
+      double duration = min(max(distance / _kSettleVelocity, _kMinSettleDuration), _kMaxSettleDuration);
       classes.add("moving");
       WebAnimations.animate(this, [{
         "transform": "translate(${-displacement.x}px, ${-displacement.y}px)"
