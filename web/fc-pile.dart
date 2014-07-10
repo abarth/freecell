@@ -27,6 +27,11 @@ class FcPile extends PolymerElement {
     });
   }
 
+  void _removeCard(FcCard fcCard) {
+    fcCard.willRemoveFromPile();
+    pile.cards.remove(fcCard.card);
+  }
+
   void handleDropCard(CustomEvent event) {
     if (pile.accept(event.detail))
       event.preventDefault();
@@ -37,10 +42,8 @@ class FcPile extends PolymerElement {
     Card card = target.card;
     if (!pile.canTake(card))
       return;
-    if (!dispatchEvent(new CustomEvent("place-card", detail:card))) {
-      target.willRemoveFromPile();
-      pile.cards.remove(card);
-    }
+    if (!dispatchEvent(new CustomEvent("place-card", detail:card)))
+      _removeCard(target);
   }
 
   void _stopDragging(Element element) {
@@ -78,9 +81,8 @@ class FcPile extends PolymerElement {
   void handleDrop(CustomEvent event) {
     FcDropInfo dropInfo = event.detail;
     FcCard target = event.target;
-    _stopDragging(target);
     if (!dropInfo.zone.dispatchEvent(new CustomEvent("drop-card", detail:target.card))) {
-      pile.cards.remove(target.card);
+      _removeCard(target);
     } else {
       target.style.transition = "transform 300ms ease-in-out";
       StreamSubscription listener;
@@ -89,5 +91,6 @@ class FcPile extends PolymerElement {
         listener.cancel();
       });
     }
+    _stopDragging(target);
   }
 }

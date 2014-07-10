@@ -13,22 +13,33 @@ class FcCard extends PolymerElement {
   Completer<FcCard> _completer;
   bool isAttached = false;
 
+  static const double _kSettleVelocity = 1.5; // dips per ms
+
   FcCard.created() : super.created() {
   }
 
   void attached() {
     isAttached = true;
     _registerCard();
-    async((_) {
+
+    // TODO(abarth): Scheduling this work using a microtask isn't quite right
+    // because there's not guarantee that we're inside requestAnimationFrame.
+    // We might be causing more layouts than necessary. Instead, Polymer needs
+    // an API that lets you schedule work to happen before the next frame. The
+    // |async| function is almost right, but it will push you to the next frame
+    // if it's called inside of requestAnimationFrame.
+    scheduleMicrotask(() {
       Point displacement = card.updateClientRect(getBoundingClientRect());
       if (displacement == null)
         return;
+      double distance = displacement.magnitude;
+      double duration = distance / _kSettleVelocity;
       WebAnimations.animate(this, [{
         "transform": "translate(${-displacement.x}px, ${-displacement.y}px)"
       }, {
         "transform": "translate(0, 0)",
       }], {
-        "duration": 400,
+        "duration": duration,
         "easing": "ease-in-out",
       });
     });
