@@ -29,6 +29,8 @@ class FcApp extends PolymerElement {
   void handleCardsLoaded(Iterable<FcCard> cards) {
     classes.remove("loading");
     classes.add("animating");
+    if (window.location.hash != null && window.location.hash.contains("fast"))
+      return;
     Rectangle rootRect = getBoundingClientRect();
     int count = cards.length;
     Future.wait(cards.map((FcCard card) {
