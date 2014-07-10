@@ -8,9 +8,9 @@ class ViewCard extends Card {
   Rectangle lastClientRect;
 
   Point updateClientRect(Rectangle newClientRect) {
-    Point displacement = newClientRect.topLeft - lastClientRect.topLeft;
+    Rectangle oldClientRect = lastClientRect;
     lastClientRect = newClientRect;
-    return displacement;
+    return oldClientRect == null ? null : newClientRect.topLeft - oldClientRect.topLeft;
   }
 
   ViewCard(Suit suit, Rank rank) : super(suit, rank) { }

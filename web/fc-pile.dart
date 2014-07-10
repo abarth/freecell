@@ -13,12 +13,12 @@ class FcPile extends PolymerElement {
   @published Pile pile;
 
   FcPile.created() : super.created() {
-    // FIXME: on-* annotations listen on the ShadowRoot,
-    // not the host, so we need to do it here for the
-    // super class.
   }
 
   void attached() {
+    // FIXME: on-* annotations listen on the ShadowRoot,
+    // not the host, so we need to do it here for the
+    // super class.
     this.shadowRoots.forEach((String className, ShadowRoot root) {
       root.on["drop-card"].listen(handleDropCard);
       root.on["fc-drag"].listen(handleDrag);
@@ -37,8 +37,10 @@ class FcPile extends PolymerElement {
     Card card = target.card;
     if (!pile.canTake(card))
       return;
-    if (!dispatchEvent(new CustomEvent("place-card", detail:card)))
+    if (!dispatchEvent(new CustomEvent("place-card", detail:card))) {
+      target.willRemoveFromPile();
       pile.cards.remove(card);
+    }
   }
 
   void _stopDragging(Element element) {
