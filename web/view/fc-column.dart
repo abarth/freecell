@@ -1,3 +1,5 @@
+library freecell.view.column;
+
 import "package:polymer/polymer.dart";
 
 import "fc-pile.dart";

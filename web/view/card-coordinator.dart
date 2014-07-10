@@ -1,10 +1,10 @@
-library freecell.cardcoordinator;
+library freecell.view.cardcoordinator;
 
 import "dart:async";
 import "dart:collection";
 
-import "deck/deck.dart";
-import "fc-card.dart";
+import '../deck/deck.dart';
+import 'fc-card.dart';
 
 class CardCoordinator {
   List<Future<FcCard>> _fcCards = new List();

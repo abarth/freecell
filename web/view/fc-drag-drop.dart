@@ -1,3 +1,5 @@
+library freecell.view.dragdrop;
+
 import "package:polymer/polymer.dart";
 import "dart:html";
 import "dart:js";

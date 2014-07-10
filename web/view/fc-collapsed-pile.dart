@@ -1,3 +1,5 @@
+library freecell.view.collapsedpile;
+
 import "package:polymer/polymer.dart";
 
 import "fc-pile.dart";

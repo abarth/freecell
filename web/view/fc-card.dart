@@ -1,12 +1,14 @@
+library freecell.view.card;
+
 import "package:polymer/polymer.dart";
 import "dart:async";
 import "dart:html";
 import "dart:math";
 
-import "deck/deck.dart";
-import "viewmodel/viewmodel.dart";
-import "polyfills/webanimations.dart";
-import "fc-card-coordinator.dart";
+import "../deck/deck.dart";
+import "../viewmodel/viewmodel.dart";
+import "../polyfills/webanimations.dart";
+import "card-coordinator.dart";
 
 @CustomTag("fc-card")
 class FcCard extends PolymerElement {

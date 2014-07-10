@@ -1,9 +1,11 @@
+library freecell.view.pile;
+
 import "package:polymer/polymer.dart";
 import "dart:html";
 import "dart:async";
 
-import "deck/deck.dart";
-import "tableau/tableau.dart";
+import "../deck/deck.dart";
+import "../tableau/tableau.dart";
 
 import "fc-card.dart";
 import "fc-drag-drop.dart";

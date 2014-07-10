@@ -1,14 +1,16 @@
+library freecell.view.app;
+
 import "package:polymer/polymer.dart";
 
 import "dart:async";
 import "dart:html";
 
-import "deck/deck.dart";
-import "tableau/tableau.dart";
-import "viewmodel/viewmodel.dart";
-import "polyfills/webanimations.dart";
+import "../deck/deck.dart";
+import "../tableau/tableau.dart";
+import "../viewmodel/viewmodel.dart";
+import "../polyfills/webanimations.dart";
 import "fc-card.dart";
-import "fc-card-coordinator.dart";
+import "card-coordinator.dart";
 
 @CustomTag("fc-app")
 class FcApp extends PolymerElement {
