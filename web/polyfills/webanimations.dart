@@ -10,10 +10,13 @@ import "dart:html";
 
 class WebAnimations {
   static Future animate(Element target, List<Map<String, String>> keyFrames, Map<String, dynamic> timingInfo) {
-    JsObject object = new JsObject.fromBrowserObject(target).callMethod("animate",
+    JsObject object = new JsObject.fromBrowserObject(target);
+    if (!object.hasProperty("animate"))
+      return new Future.value();
+    JsObject player = object.callMethod("animate",
         [new JsObject.jsify(keyFrames), new JsObject.jsify(timingInfo)]);
     Completer completer = new Completer();
-    object.callMethod("addEventListener", ["finish", (event) {
+    player.callMethod("addEventListener", ["finish", (event) {
       completer.complete();
     }]);
     return completer.future;

@@ -23,6 +23,7 @@ class FcDropInfo {
 class FcDragDrop extends PolymerElement {
   @observable bool dragging = false;
 
+  StreamSubscription dragStartListener;
   StreamSubscription trackStartListener;
   StreamSubscription trackListener;
   StreamSubscription trackEndListener;
@@ -34,12 +35,19 @@ class FcDragDrop extends PolymerElement {
     trackStartListener = parentNode.on["trackstart"].listen(handleTrackStart);
     trackListener = parentNode.on["track"].listen(handleTrack);
     trackEndListener = parentNode.on["trackend"].listen(handleTrackEnd);
+    dragStartListener = parentNode.on["dragstart"].listen(handleDragStart);
   }
 
   void detached() {
     trackStartListener.cancel();
     trackListener.cancel();
     trackEndListener.cancel();
+    dragStartListener.cancel();
+  }
+
+  // Prevent native dragging in Firefox.
+  void handleDragStart(Event event) {
+    event.preventDefault();
   }
 
   void handleTrackStart(Event event) {
