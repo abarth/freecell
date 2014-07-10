@@ -26,9 +26,11 @@ class FcApp extends PolymerElement {
     classes.add("loading");
   }
 
-  void handleCardsLoaded(List<FcCard> cards) {
+  void handleCardsLoaded(Iterable<FcCard> cards) {
     classes.remove("loading");
+    Rectangle root = getBoundingClientRect();
     cards.forEach((FcCard card) {
+      Rectangle rect = card.getBoundingClientRect();
       scheduleAnimation(card, [{
         "transform": "translate(-1000px, 5000px)",
       }, {

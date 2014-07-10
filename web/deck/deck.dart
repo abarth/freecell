@@ -23,7 +23,7 @@ class Deck {
     }
   }
 
-  Set<Card> get cards => new Set.from(_cards);
+  List<Card> get cards => new List.from(_cards);
 
   void shuffle() {
     if (_cards.isEmpty)
