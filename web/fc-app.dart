@@ -28,23 +28,36 @@ class FcApp extends PolymerElement {
 
   void handleCardsLoaded(Iterable<FcCard> cards) {
     classes.remove("loading");
-    Rectangle root = getBoundingClientRect();
-    cards.forEach((FcCard card) {
-      Rectangle rect = card.getBoundingClientRect();
-      scheduleAnimation(card, [{
-        "transform": "translate(-1000px, 5000px)",
+    classes.add("animating");
+    Rectangle rootRect = getBoundingClientRect();
+    int count = cards.length;
+    Future.wait(cards.map((FcCard card) {
+      Rectangle cardRect = card.getBoundingClientRect();
+      double widthOffset = (rootRect.width / 2) - (cardRect.width / 2) - cardRect.left;
+      double heightOffset = rootRect.height - cardRect.top;
+      return scheduleAnimation(card, [{
+        "transform": "translate(${widthOffset}px, ${heightOffset}px)",
       }, {
         "transform": "translate(0, 0)",
       }], {
-        "duration": 300,
+        "duration": 500,
+        "delay": --count * 100,
+        "fill": "backwards",
         "easing": "ease-in-out",
       });
+    })).then((_) {
+      classes.remove("animating");
     });
   }
 
-  void scheduleAnimation(Element target, List<Map<String, String>> keyFrames, Map<String, dynamic> timingInfo) {
-    new JsObject.fromBrowserObject(target).callMethod("animate",
+  Future scheduleAnimation(Element target, List<Map<String, String>> keyFrames, Map<String, dynamic> timingInfo) {
+    JsObject object = new JsObject.fromBrowserObject(target).callMethod("animate",
         [new JsObject.jsify(keyFrames), new JsObject.jsify(timingInfo)]);
+    Completer completer = new Completer();
+    object.callMethod("addEventListener", [() {
+      completer.complete();
+    }]);
+    return completer.future;
   }
 
   void handlePlaceCard(CustomEvent event, Card card) {

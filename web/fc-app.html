@@ -48,6 +48,10 @@
       :host(.loading) /deep/ fc-card {
         visibility: hidden;
       }
+
+      :host(.animating) /deep/ fc-card {
+        position: relative;
+      }
     </style>
     <div class="piles">
       <template repeat="{{ cell in tableau.cells }}">
