@@ -37,8 +37,10 @@ class FcApp extends PolymerElement {
       double heightOffset = rootRect.height - cardRect.top;
       return scheduleAnimation(card, [{
         "transform": "translate(${widthOffset}px, ${heightOffset}px)",
+        "zIndex": "${count}",
       }, {
         "transform": "translate(0, 0)",
+        "zIndex": "${count}"
       }], {
         "duration": 500,
         "delay": --count * 100,
@@ -54,7 +56,7 @@ class FcApp extends PolymerElement {
     JsObject object = new JsObject.fromBrowserObject(target).callMethod("animate",
         [new JsObject.jsify(keyFrames), new JsObject.jsify(timingInfo)]);
     Completer completer = new Completer();
-    object.callMethod("addEventListener", [() {
+    object.callMethod("addEventListener", ["finish", (event) {
       completer.complete();
     }]);
     return completer.future;
