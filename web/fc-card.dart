@@ -35,13 +35,14 @@ class FcCard extends PolymerElement {
     if (card == null)
       return;
     _completer = new Completer();
-    FcCardCoordinator.addCard(_completer.future);
+    CardCoordinator.instance.addCard(_completer.future);
   }
 
   void _unregisterCard() {
     if (_completer == null)
       return;
-    FcCardCoordinator.removeCard(_completer.future);
+    CardCoordinator.instance.removeCard(_completer.future);
+    _completer = null;
   }
 
   void handleLoad(Event event) {

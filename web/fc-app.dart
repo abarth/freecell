@@ -1,11 +1,14 @@
 import "package:polymer/polymer.dart";
 
+import "dart:async";
 import "dart:html";
 import "dart:js";
 
 import "deck/deck.dart";
 import "tableau/tableau.dart";
 import "fc-card.dart";
+import "fc-card-coordinator.dart";
+
 
 @CustomTag("fc-app")
 class FcApp extends PolymerElement {
@@ -15,19 +18,29 @@ class FcApp extends PolymerElement {
     Deck deck = new Deck();
     deck.shuffle();
 
+    CardCoordinator.instance.waitForDeck(deck).then(handleCardsLoaded);
+
     tableau = new Tableau();
     tableau.deal(deck);
+
     classes.add("loading");
-    async((double time) {
-      $["cardCoordinator"].notifyWhenReady();
+  }
+
+  void handleCardsLoaded(List<FcCard> cards) {
+    classes.remove("loading");
+    cards.forEach((FcCard card) {
+      scheduleAnimation(card, [{
+        "transform": "translate(-1000px, 5000px)",
+      }, {
+        "transform": "translate(0, 0)",
+      }], {
+        "duration": 300,
+        "easing": "ease-in-out",
+      });
     });
   }
 
-  void handleCardsLoaded(CustomEvent event, List<FcCard> cards) {
-    classes.remove("loading");
-  }
-
-  void playAnimation(Element target, List<Map<String, String>> keyFrames, Map<String, dynamic> timingInfo) {
+  void scheduleAnimation(Element target, List<Map<String, String>> keyFrames, Map<String, dynamic> timingInfo) {
     new JsObject.fromBrowserObject(target).callMethod("animate",
         [new JsObject.jsify(keyFrames), new JsObject.jsify(timingInfo)]);
   }

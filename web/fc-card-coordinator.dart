@@ -1,34 +1,32 @@
-import "package:polymer/polymer.dart";
+library freecell.cardcoordinator;
+
 import "dart:async";
 
 import "deck/deck.dart";
 import "fc-card.dart";
 
-@CustomTag("fc-card-coordinator")
-class FcCardCoordinator extends PolymerElement {
-  static List<Future<FcCard>> cards = new List();
-  static List<FcCardCoordinator> instances = new List();
+class CardCoordinator {
+  List<Future<FcCard>> _fcCards = new List();
+  Set<Card> _cards;
+  Completer _completer = new Completer();
 
-  static void addCard(Future<FcCard> card) {
-    cards.add(card);
+  static final CardCoordinator instance = new CardCoordinator();
+
+  void addCard(Future<FcCard> future) {
+    _fcCards.add(future);
+    future.then((card) {
+      _cards.remove(card.card);
+      if (_cards.isEmpty)
+        _completer.complete(Future.wait(_fcCards));
+    });
   }
 
-  static void removeCard(Future<FcCard> card) {
-    cards.remove(card);
+  void removeCard(Future<FcCard> future) {
+    _fcCards.remove(future);
   }
 
-  void notifyWhenReady() {
-    Future.wait(cards).then((cards) => fire("cards-loaded", detail:cards));
-  }
-
-  FcCardCoordinator.created() : super.created() {
-  }
-
-  void attached() {
-    instances.add(this);
-  }
-
-  void detached() {
-    instances.remove(this);
+  Future waitForDeck(Deck deck) {
+    _cards = deck.cards;
+    return _completer.future;
   }
 }

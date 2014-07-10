@@ -23,6 +23,8 @@ class Deck {
     }
   }
 
+  Set<Card> get cards => new Set.from(_cards);
+
   void shuffle() {
     if (_cards.isEmpty)
       return;
