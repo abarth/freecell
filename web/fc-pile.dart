@@ -58,8 +58,9 @@ class FcPile extends PolymerElement {
   void _startDragging(Element element) {
     element.style.setProperty("will-change", "transform");
     element.style.pointerEvents = "none";
-    element.style.boxShadow = "0 0 3px 3px #FFFFCC";
+    element.style.boxShadow = "0 0 12px 3px #FFFFCC";
     element.style.backgroundColor = "#FFFFCC";
+    element.style.borderRadius = "6px";
   }
 
   void handleDrag(CustomEvent event) {
