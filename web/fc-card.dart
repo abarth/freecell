@@ -34,6 +34,7 @@ class FcCard extends PolymerElement {
         return;
       double distance = displacement.magnitude;
       double duration = distance / _kSettleVelocity;
+      classes.add("moving");
       WebAnimations.animate(this, [{
         "transform": "translate(${-displacement.x}px, ${-displacement.y}px)"
       }, {
@@ -41,6 +42,8 @@ class FcCard extends PolymerElement {
       }], {
         "duration": duration,
         "easing": "ease-in-out",
+      }).then((_) {
+        classes.remove("moving");
       });
     });
   }
