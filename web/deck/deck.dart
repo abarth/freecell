@@ -23,6 +23,10 @@ class Deck {
     }
   }
 
+  Deck.of(List<Card> cards) {
+    _cards = new List.from(cards);
+  }
+
   List<Card> get cards => new List.from(_cards);
 
   void shuffle() {

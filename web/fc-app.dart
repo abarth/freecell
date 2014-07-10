@@ -6,6 +6,7 @@ import "dart:js";
 
 import "deck/deck.dart";
 import "tableau/tableau.dart";
+import "viewmodel/viewmodel.dart";
 import "fc-card.dart";
 import "fc-card-coordinator.dart";
 
@@ -15,7 +16,7 @@ class FcApp extends PolymerElement {
   @observable Tableau tableau;
 
   FcApp.created() : super.created() {
-    Deck deck = new Deck();
+    Deck deck = new ViewDeck();
     deck.shuffle();
 
     CardCoordinator.instance.waitForDeck(deck).then(handleCardsLoaded);
