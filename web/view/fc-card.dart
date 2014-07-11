@@ -37,19 +37,52 @@ class FcCard extends PolymerElement {
       Point displacement = card.updateClientRect(getBoundingClientRect());
       if (displacement == null)
         return;
-      double distance = displacement.magnitude;
-      double duration = min(max(distance / _kSettleVelocity, _kMinSettleDuration), _kMaxSettleDuration);
-      classes.add("moving");
-      WebAnimations.animate(this, [{
-        "transform": "translate(${-displacement.x}px, ${-displacement.y}px)"
-      }, {
-        "transform": "translate(0, 0)",
-      }], {
-        "duration": duration,
-        "easing": "ease-in-out",
-      }).then((_) {
-        classes.remove("moving");
-      });
+      if (card.flyAway) {
+        _playFlyAway(displacement);
+      } else
+        _playMovement(displacement);
+    });
+  }
+
+  void _playFlyAway(Point displacement) {
+    classes.add("moving");
+    Random random = new Random();
+    Rectangle rootRect = document.body.getBoundingClientRect();
+    Rectangle rect = getBoundingClientRect();
+    double endX = rootRect.width + rect.width;
+    double endY = rootRect.height + rect.height;
+    if (random.nextBool())
+      endX *= -1;
+    WebAnimations.animate(this, [
+    {
+      "transform": "translate(${-displacement.x}px, ${-displacement.y}px)",
+    },
+    {
+      "transform": "translate(${endX}px, ${endY}px)",
+    }], {
+      "duration": _kMaxSettleDuration * 3,
+      "delay": 100,
+      "easing": "ease-in-out",
+      "fill": "infinite",
+    }).then((_) {
+      classes.remove("moving");
+      hidden = true;
+    });
+  }
+
+  void _playMovement(Point displacement) {
+    double distance = displacement.magnitude;
+    double duration = min(max(distance / _kSettleVelocity, _kMinSettleDuration), _kMaxSettleDuration);
+    classes.addAll(["moving", "glow"]);
+    WebAnimations.animate(this, [{
+      "transform": "translate(${-displacement.x}px, ${-displacement.y}px)"
+    }, {
+      "transform": "translate(0, 0)",
+    }], {
+      "duration": duration,
+      "easing": "ease-in-out",
+    }).then((_) {
+      classes.removeAll(["moving", "glow"]);
     });
   }
 

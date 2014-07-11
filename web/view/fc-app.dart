@@ -33,6 +33,8 @@ class FcApp extends PolymerElement {
     if (seed == 0)
       return;
 
+    remainingCards = 52;
+
     Deck deck = new ViewDeck();
     deck.shuffle(seed);
 
@@ -51,7 +53,38 @@ class FcApp extends PolymerElement {
   void handleFreecellSolved(CustomEvent event, String solution) {
     SolutionPlayer player = new SolutionPlayer(tableau, new Solution.parse(solution));
     player.play().then((_) {
-      print("Done!!!");
+      handlePileChanged();
+    });
+  }
+
+  void handlePileChanged() {
+    remainingCards = 52;
+    tableau.towers.forEach((tower) {
+      remainingCards -= tower.cards.length;
+    });
+    if (remainingCards == 0)
+      _flyAwayCards();
+  }
+
+  void _flyAwayCards() {
+    Random random = new Random();
+    CardCoordinator.instance.cards.then((List<FcCard> fcCards) {
+      fcCards.forEach((fcCard) {
+        ViewCard card = fcCard.card;
+        if (card == null || card.flyAway)
+          return;
+        card.flyAway = true;
+        fcCard.willRemoveFromPile();
+        tableau.towers.forEach((tower) {
+          tower.cards.remove(card);
+        });
+        tableau.columns[random.nextInt(kNumberOfColumns)].cards.add(card);
+      });
+      if (tableau.towers.any((tower) => !tower.isEmpty)) {
+        async((_) {
+          _flyAwayCards();
+        });
+      }
     });
   }
 
@@ -87,12 +120,14 @@ class FcApp extends PolymerElement {
     for (Tower tower in tableau.towers) {
       if (tower.accept(card)) {
         event.preventDefault();
+        asyncFire("pile-changed");
         return;
       }
     }
     for (Cell cell in tableau.cells) {
       if (cell.accept(card)) {
         event.preventDefault();
+        asyncFire("pile-changed");
         return;
       }
     }

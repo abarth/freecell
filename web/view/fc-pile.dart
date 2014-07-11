@@ -35,8 +35,10 @@ class FcPile extends PolymerElement {
   }
 
   void handleDropCard(CustomEvent event) {
-    if (pile.accept(event.detail))
+    if (pile.accept(event.detail)) {
       event.preventDefault();
+      asyncFire("pile-changed");
+    }
   }
 
   void handleDoubleClick(Event event) {

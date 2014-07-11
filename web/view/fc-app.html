@@ -10,7 +10,7 @@
 <link rel="import" href="fc-collapsed-pile.html">
 <link rel="import" href="fc-column.html">
 
-<polymer-element name="fc-app" on-place-card="{{ handlePlaceCard }}">
+<polymer-element name="fc-app" on-place-card="{{ handlePlaceCard }}" on-pile-changed="{{ handlePileChanged }}">
   <template>
     <style>
       :host {
@@ -105,14 +105,7 @@
         <button on-tap="{{ solve }}">Solve</button>
       </div>
       <div id="status">
-        <!-- FIXME: This should be a computed property, how do I do that in dart? -->
-        Cards Left: {{
-          52
-            - tableau.towers[0].cards.length
-            - tableau.towers[1].cards.length
-            - tableau.towers[2].cards.length
-            - tableau.towers[3].cards.length
-         }}
+        Cards Left: {{ remainingCards }}
       </div>
     </div>
     <div class="piles">
