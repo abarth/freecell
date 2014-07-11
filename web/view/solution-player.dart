@@ -1,7 +1,5 @@
 library freecell.view.solutionplayer;
 
-import "dart:async";
-
 import "../deck/deck.dart";
 import "../tableau/tableau.dart";
 import "../solver/solution.dart";
@@ -95,38 +93,30 @@ class SolutionPlayer {
   List<Transfer> _compoundPlan;
   int _nextStepInCompoundPlan = -1;
 
-  Completer _completer = new Completer();
-
   SolutionPlayer(this.tableau, this.solution);
 
-  Future play() {
-    _scheduleNextMove();
-    return _completer.future;
+  bool next() {
+    if (_compoundPlan == null)
+      return _performNextMove();
+    return _performNextStepInCompoundPlan();
   }
 
-  void _scheduleNextMove() {
-    new Timer(_moveDelay, _performNextMove);
+  bool _performNextMove() {
+    if (_nextMove >= solution.moves.length)
+      return false;
+    return _performMove(solution.moves[_nextMove++]);
   }
 
-  void _performNextMove() {
-    if (_nextMove >= solution.moves.length) {
-      _completer.complete();
-      return;
-    }
-    _performMove(solution.moves[_nextMove++]);
-  }
-
-  void _performMove(Move move) {
+  bool _performMove(Move move) {
     if (move.count > 1) {
       CompoundMovePlanner planner = new CompoundMovePlanner(tableau);
       _compoundPlan = planner.plan(_planSimpleMove(move), move.count);
       _nextStepInCompoundPlan = 0;
-      _performNextStepInCompoundPlan();
-      return;
+      return _performNextStepInCompoundPlan();
     }
 
     _executeSimplePlan(_planSimpleMove(move));
-    _scheduleNextMove();
+    return true;
   }
 
   Transfer _planSimpleMove(Move move) {
@@ -147,15 +137,14 @@ class SolutionPlayer {
     transfer.source.cards.remove(card);
   }
 
-  void _performNextStepInCompoundPlan() {
+  bool _performNextStepInCompoundPlan() {
     if (_nextStepInCompoundPlan >= _compoundPlan.length) {
       _compoundPlan = null;
       _nextStepInCompoundPlan = -1;
-      _performNextMove();
-      return;
+      return _performNextMove();
     }
     _executeSimplePlan(_compoundPlan[_nextStepInCompoundPlan++]);
-    new Timer(_moveDelay, _performNextStepInCompoundPlan);
+    return true;
   }
 
   Pile _sourcePile(Move move) {

@@ -10,7 +10,10 @@
 <link rel="import" href="fc-collapsed-pile.html">
 <link rel="import" href="fc-column.html">
 
-<polymer-element name="fc-app" on-place-card="{{ handlePlaceCard }}" on-pile-changed="{{ handlePileChanged }}">
+<polymer-element name="fc-app"
+    on-place-card="{{ handlePlaceCard }}"
+    on-pile-changed="{{ handlePileChanged }}"
+    on-card-movement-end="{{ handleCardMovementEnd }}">
   <template>
     <style>
       :host {

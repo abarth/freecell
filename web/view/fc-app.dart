@@ -24,6 +24,7 @@ class FcApp extends PolymerElement {
 
   bool fastFlag = false;
   bool cheatFlag = false;
+  SolutionPlayer _solutionPlayer;
 
   FcApp.created() : super.created() {
     boardId = _randomBoardId();
@@ -82,12 +83,22 @@ class FcApp extends PolymerElement {
   }
 
   void handleFreecellSolved(CustomEvent event, String solution) {
-    SolutionPlayer player = new SolutionPlayer(tableau, new Solution.parse(solution));
+    _solutionPlayer = new SolutionPlayer(tableau, new Solution.parse(solution));
     classes.add("animating");
-    player.play().then((_) {
+    _pumpSolutionPlayer();
+  }
+
+  void handleCardMovementEnd() {
+    if (_solutionPlayer != null)
+      _pumpSolutionPlayer();
+  }
+
+  void _pumpSolutionPlayer() {
+    if (!_solutionPlayer.next()) {
+      _solutionPlayer = null;
       classes.remove("animating");
       handlePileChanged();
-    });
+    }
   }
 
   void newBoard() {

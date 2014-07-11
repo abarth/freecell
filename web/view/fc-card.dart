@@ -75,6 +75,7 @@ class FcCard extends PolymerElement {
       "easing": "ease-in-out",
     }).then((_) {
       classes.removeAll(["moving", "glow"]);
+      fire("card-movement-end");
     });
   }
 

@@ -28,9 +28,6 @@
       }
     </style>
     <template if="{{ !pile.cards.isEmpty }}">
-      <template if="{{ pile.cards.length >= 3 }}">
-        <fc-card class="above" card="{{ pile.cards[pile.cards.length - 3] }}"></fc-card>
-      </template>
       <template if="{{ pile.cards.length >= 2 }}">
         <fc-card card="{{ pile.cards[pile.cards.length - 2] }}"></fc-card>
       </template>
