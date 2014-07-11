@@ -59,9 +59,11 @@ class FcCard extends PolymerElement {
 
   void _playMovement() {
     Point displacement = card.updateClientRect(getBoundingClientRect());
-    if (displacement == null || displacement.magnitude == 0)
+    if (displacement == null)
       return;
     double distance = displacement.magnitude;
+    if (distance == 0)
+      return;
     double duration = min(max(distance / _kSettleVelocity, _kMinSettleDuration), _kMaxSettleDuration);
     classes.addAll(["moving", "glow"]);
     card.animate(this, [{
