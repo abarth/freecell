@@ -5,7 +5,7 @@
 part of freecell.tableau;
 
 class Column extends Pile {
-  bool _canAccept(Card card) {
+  bool canAccept(Card card) {
     if (cards.isEmpty)
       return true;
     Card current = cards.last;

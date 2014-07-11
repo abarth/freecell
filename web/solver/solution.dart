@@ -41,6 +41,7 @@ class Solution {
   List<Move> moves;
 
   Solution.parse(String solution) {
+    print(solution);
     moves = solution.split('\n').map((move) => new Move.parse(move)).toList();
   }
 }

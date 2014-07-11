@@ -13,6 +13,7 @@ import "../solver/solution.dart";
 import "../polyfills/webanimations.dart";
 import "fc-card.dart";
 import "card-coordinator.dart";
+import "solution-player.dart";
 
 @CustomTag("fc-app")
 class FcApp extends PolymerElement {
@@ -48,7 +49,10 @@ class FcApp extends PolymerElement {
   }
 
   void handleFreecellSolved(CustomEvent event, String solution) {
-    new Solution.parse(solution);
+    SolutionPlayer player = new SolutionPlayer(tableau, new Solution.parse(solution));
+    player.play().then((_) {
+      print("Done!!!");
+    });
   }
 
   void handleCardsLoaded(Iterable<FcCard> cards) {

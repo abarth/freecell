@@ -5,7 +5,7 @@
 part of freecell.tableau;
 
 class Tower extends Pile {
-  bool _canAccept(Card card) {
+  bool canAccept(Card card) {
     if (cards.isEmpty)
       return card.rank.value == 1;
     Card current = cards.last;

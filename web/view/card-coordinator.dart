@@ -14,6 +14,8 @@ class CardCoordinator {
 
   static final CardCoordinator instance = new CardCoordinator();
 
+  FcCard viewForCard(Card card) => _cards[card];
+
   void addCard(Future<FcCard> future) {
     _fcCards.add(future);
     future.then((fcCard) {

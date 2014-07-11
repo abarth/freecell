@@ -13,11 +13,11 @@ abstract class Pile {
 
   bool get isEmpty => cards.isEmpty;
 
-  bool _canAccept(Card);
+  bool canAccept(Card);
   bool canTake(Card);
 
   bool accept(Card card) {
-    if (!_canAccept(card))
+    if (!canAccept(card))
       return false;
     cards.add(card);
     return true;
