@@ -58,12 +58,15 @@ class FcApp extends PolymerElement {
   }
 
   void handlePileChanged() {
+    if (tableau.hasWon) {
+      remainingCards = 0;
+      _flyAwayCards();
+      return;
+    }
     remainingCards = 52;
     tableau.towers.forEach((tower) {
       remainingCards -= tower.cards.length;
     });
-    if (remainingCards == 0)
-      _flyAwayCards();
   }
 
   void _flyAwayCards() {
