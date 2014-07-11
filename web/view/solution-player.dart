@@ -8,24 +8,66 @@ import "../solver/solution.dart";
 
 import "card-coordinator.dart";
 
-class _CompoundMoveState {
-  Move move;
-  List<Pile> temporaries = new List<Pile>();
-  int windStep = 0;
-  int unwindStep = 0;
-  bool needsHeroStep = true;
+class Transfer {
+  final Pile source;
+  final Pile destination;
 
-  _CompoundMoveState(this.move);
+  Transfer(this.source, this.destination);
+}
+
+class CompoundMovePlanner {
+  Tableau tableau;
+  List<Pile> freeCells;
+  List<Pile> freeColumns;
+
+  CompoundMovePlanner(this.tableau) {
+    freeCells = _findFree(tableau.cells);
+    freeColumns = _findFree(tableau.columns);
+  }
+
+  List<Pile> _findFree(List<Pile> piles) {
+    List<Pile> result = new List<Pile>();
+    for (Pile pile in tableau.cells) {
+      if (pile.isEmpty)
+        result.add(pile);
+    }
+    return result;
+  }
+
+  List<Transfer> plan(Transfer transfer, int count) {
+    if (count <= freeCells.length + 1)
+      return _createSimplePlan(transfer, count);
+    assert(false);
+    return null;
+  }
+
+  List<Transfer> _createSimplePlan(Transfer transfer, int count) {
+    List<Transfer> plan = new List<Transfer>();
+
+    for (int i = 0; i < count - 1; ++i)
+      plan.add(new Transfer(transfer.source, freeCells[i]));
+
+    plan.add(transfer);
+
+    for (int i = count - 2; i >= 0; --i)
+      plan.add(new Transfer(freeCells[i], transfer.destination));
+
+    return plan;
+  }
 }
 
 class SolutionPlayer {
   static final _moveDelay = new Duration(milliseconds: 100);
 
   Tableau tableau;
+
   Solution solution;
   int _nextMove = 0;
+
+  List<Transfer> _compoundPlan;
+  int _nextStepInCompoundPlan = -1;
+
   Completer _completer = new Completer();
-  _CompoundMoveState _compoundState;
 
   SolutionPlayer(this.tableau, this.solution);
 
@@ -48,69 +90,44 @@ class SolutionPlayer {
 
   void _performMove(Move move) {
     if (move.count > 1) {
-      _compoundState = new _CompoundMoveState(move);
-      _performCompoundMoveStep();
+      CompoundMovePlanner planner = new CompoundMovePlanner(tableau);
+      _compoundPlan = planner.plan(_planSimpleMove(move), move.count);
+      _nextStepInCompoundPlan = 0;
+      _performNextStepInCompoundPlan();
       return;
     }
 
-    Pile source = _sourcePile(move);
-    Card card = source.cards.last;
-    Pile destination = _destiniationPile(move, card);
-
-    _transferCard(card, source, destination);
+    _executeSimplePlan(_planSimpleMove(move));
     _scheduleNextMove();
   }
 
-  void _scheduleCompoundMoveStep() {
-    new Timer(_moveDelay, _performCompoundMoveStep);
-  }
-
-  void _performCompoundMoveStep() {
-    Move move = _compoundState.move;
-
-    assert(move.count > 1);
-    assert(move.sourceType == 'stack');
-    assert(move.destinationType == 'stack');
-
+  Transfer _planSimpleMove(Move move) {
     Pile source = _sourcePile(move);
-    Pile destination = _destiniationPile(move, null);
-
-    while (_compoundState.windStep < move.count - 1) {
-      Card card = source.cards.last;
-      Pile temporary = _findTempory(card, destination);
-      _compoundState.temporaries.add(temporary);
-      _transferCard(card, source, temporary);
-      ++_compoundState.windStep;
-      _scheduleCompoundMoveStep();
-      return;
-    }
-
-    if (_compoundState.needsHeroStep) {
-      _transferCard(source.cards.last, source, destination);
-      _compoundState.needsHeroStep = false;
-      _scheduleCompoundMoveStep();
-      return;
-    }
-
-    while (_compoundState.unwindStep < _compoundState.temporaries.length) {
-      Pile temporary = _compoundState.temporaries[_compoundState.temporaries.length - _compoundState.unwindStep - 1];
-      _transferCard(temporary.cards.last, temporary, destination);
-      ++_compoundState.unwindStep;
-      _scheduleCompoundMoveStep();
-      return;
-    }
-
-    _compoundState = null;
-    _performNextMove();
+    Card card = source.cards.last;
+    Pile destination = _destiniationPile(move, card);
+    return new Transfer(source, destination);
   }
 
-  void _transferCard(Card card, Pile source, Pile destination) {
-    assert(source.canTake(card));
-    assert(destination.canAccept(card));
+  void _executeSimplePlan(Transfer transfer) {
+    Card card = transfer.source.cards.last;
 
-    // _willRemoveFromPile(card);
-    destination.accept(card);
-    source.cards.remove(card);
+    assert(transfer.source.canTake(card));
+    assert(transfer.destination.canAccept(card));
+
+    _willRemoveFromPile(card);
+    transfer.destination.accept(card);
+    transfer.source.cards.remove(card);
+  }
+
+  void _performNextStepInCompoundPlan() {
+    if (_nextStepInCompoundPlan >= _compoundPlan.length) {
+      _compoundPlan = null;
+      _nextStepInCompoundPlan = -1;
+      _performNextMove();
+      return;
+    }
+    _executeSimplePlan(_compoundPlan[_nextStepInCompoundPlan++]);
+    new Timer(_moveDelay, _performNextStepInCompoundPlan);
   }
 
   Pile _sourcePile(Move move) {
@@ -135,21 +152,6 @@ class SolutionPlayer {
           if (tower.canAccept(card))
             return tower;
         }
-    }
-    assert(false);
-    return null;
-  }
-
-  Pile _findTempory(Card card, Pile excluded) {
-    for (Cell cell in tableau.cells) {
-      if (cell.canAccept(card))
-        return cell;
-    }
-    for (Column column in tableau.columns) {
-      if (!column.isEmpty || column == excluded)
-        continue;
-      if (column.canAccept(card))
-        return column;
     }
     assert(false);
     return null;
