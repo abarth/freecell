@@ -9,6 +9,7 @@ import "dart:math";
 import "../deck/deck.dart";
 import "../tableau/tableau.dart";
 import "../viewmodel/viewmodel.dart";
+import "../solver/solution.dart";
 import "../polyfills/webanimations.dart";
 import "fc-card.dart";
 import "card-coordinator.dart";
@@ -47,7 +48,7 @@ class FcApp extends PolymerElement {
   }
 
   void handleFreecellSolved(CustomEvent event, String solution) {
-    print(solution);
+    new Solution.parse(solution);
   }
 
   void handleCardsLoaded(Iterable<FcCard> cards) {
