@@ -28,19 +28,23 @@ class Rank {
   }
 
   String get serialization {
-    if (value < 10)
-      return value.toString();
-    if (value == 10)
-      return 'T';
-    if (value == 11)
-      return 'J';
-    if (value == 12)
-      return 'Q';
-    if (value == 13)
-      return 'K';
-    assert(false);
-    return null;
+    switch (value) {
+      case 13:
+        return "K";
+      case 12:
+        return "Q";
+      case 11:
+        return "J";
+      case 10:
+        return "T";
+      case 1:
+        return "A";
+    }
+    return value.toString();
   }
 
-  Rank(this.value);
+  Rank(this.value) {
+    assert(value > 0);
+    assert(value <= 13);
+  }
 }
