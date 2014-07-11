@@ -17,7 +17,6 @@ import "card-coordinator.dart";
 class FcApp extends PolymerElement {
   @observable Tableau tableau;
   @observable String boardForSolver;
-  @observable String solution;
 
   FcApp.created() : super.created() {
     // FIXME: Add UI to enter a seed.
@@ -37,7 +36,7 @@ class FcApp extends PolymerElement {
     boardForSolver = tableau.serialization;
   }
 
-  void solutionChanged(String oldValue, String newValue) {
+  void handleFreecellSolved(CustomEvent event, String solution) {
     print(solution);
   }
 

@@ -23,8 +23,15 @@ var Module = {
           this.solution = null;
           return;
         }
+
         freecell.solve(this.board).then(function(solution) {
           this.solution = solution;
+          // TODO(abarth): Interoperability between JavaScript and Dart
+          // Polymer elements is broken. The Dart components can't listen
+          // for changes in JavaScript components. To work around this bug
+          // we need to fire and event to notify Dart components.
+          // https://code.google.com/p/dart/issues/detail?id=19979
+          this.fire('freecell-solved', this.solution);
         }.bind(this), function(error) {
           this.solution = null;
           console.log('stack' in error ? error.stack : error);
@@ -33,3 +40,5 @@ var Module = {
     });
   </script>
 </polymer-element>
+
+<script type="application/dart" src="freecell-solver.dart"></script>

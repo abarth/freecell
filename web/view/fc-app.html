@@ -75,7 +75,7 @@
       </template>
     </div>
     <button on-tap="{{ solve }}">Solve</button>
-    <freecell-solver board="{{ boardForSolver }}" solution="{{ solution }}"></freecell-solver>
+    <freecell-solver board="{{ boardForSolver }}" on-freecell-solved="{{ handleFreecellSolved }}"></freecell-solver>
   </template>
   <script type="application/dart" src="fc-app.dart"></script>
 </polymer-element>
