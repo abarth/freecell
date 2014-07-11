@@ -12,21 +12,10 @@ part 'msrandom.dart';
 part 'rank.dart';
 part 'suit.dart';
 
-class Deck {
+abstract class Deck {
   List<Card> _cards;
 
-  Deck() {
-    _cards = new List<Card>();
-    for (Rank rank in Rank.all) {
-      for (Suit suit in Suit.all){
-        _cards.add(new Card(suit, rank));
-      }
-    }
-  }
-
-  Deck.of(List<Card> cards) {
-    _cards = new List.from(cards);
-  }
+  Deck(this._cards);
 
   List<Card> get cards => new List.from(_cards);
 

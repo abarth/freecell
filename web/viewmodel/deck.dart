@@ -5,7 +5,7 @@
 part of freecell.viewmodel;
 
 class ViewDeck extends Deck {
-  ViewDeck() : super.of(_createCards()) {
+  ViewDeck() : super(_createCards()) {
   }
 
   static List<Card> _createCards() {
