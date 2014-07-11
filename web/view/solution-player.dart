@@ -85,7 +85,7 @@ class CompoundMovePlanner {
 }
 
 class SolutionPlayer {
-  static final _moveDelay = new Duration(milliseconds: 500);
+  static final _moveDelay = new Duration(milliseconds: 200);
 
   Tableau tableau;
 

@@ -35,6 +35,7 @@ class FcApp extends PolymerElement {
 
     $["win"].hidden = true;
     remainingCards = 52;
+    boardForSolver = null;
 
     Deck deck = new ViewDeck();
     deck.shuffle(seed);
