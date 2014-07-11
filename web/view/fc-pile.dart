@@ -40,6 +40,9 @@ class FcPile extends PolymerElement {
   }
 
   void handleDoubleClick(Event event) {
+    // It's possible to double-click on a shadow root somehow.
+    if (!(event.target is FcCard))
+      return;
     FcCard target = event.target;
     Card card = target.card;
     if (!pile.canTake(card))
