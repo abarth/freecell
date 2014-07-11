@@ -18,7 +18,7 @@ class FcCard extends PolymerElement {
 
   static const double _kSettleVelocity = 1.5; // dips per ms
   static const double _kMinSettleDuration = 200.0; // ms
-  static const double _kMaxSettleDuration = 0.0; // ms
+  static const double _kMaxSettleDuration = 500.0; // ms
 
   FcCard.created() : super.created() {
   }
