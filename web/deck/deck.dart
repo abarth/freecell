@@ -30,11 +30,11 @@ class Deck {
 
   List<Card> get cards => new List.from(_cards);
 
-  void shuffle() {
+  void shuffle(int seed) {
     if (_cards.isEmpty)
       return;
     var i = _cards.length;
-    var random = new MSRandom(new Random().nextInt(51));
+    var random = new MSRandom(seed);
     while (--i > 0) {
         int j = random.nextInt(i + 1);
         Card card= _cards[i];

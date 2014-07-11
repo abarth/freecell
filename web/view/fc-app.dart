@@ -4,6 +4,7 @@ import "package:polymer/polymer.dart";
 
 import "dart:async";
 import "dart:html";
+import "dart:math";
 
 import "../deck/deck.dart";
 import "../tableau/tableau.dart";
@@ -17,8 +18,10 @@ class FcApp extends PolymerElement {
   @observable Tableau tableau;
 
   FcApp.created() : super.created() {
+    // FIXME: Add UI to enter a seed.
+    int seed = new Random().nextInt(51);
     Deck deck = new ViewDeck();
-    deck.shuffle();
+    deck.shuffle(seed);
 
     CardCoordinator.instance.waitForDeck(deck).then(handleCardsLoaded);
 
