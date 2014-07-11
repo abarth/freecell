@@ -27,9 +27,9 @@ class FcApp extends PolymerElement {
 
   FcApp.created() : super.created() {
     newBoard();
-    String hash = window.location.search;
-    if (hash != null && !hash.isEmpty) {
-      Map<String, String> flags = Uri.splitQueryString(hash.substring(1));
+    String query = window.location.search;
+    if (query != null && !query.isEmpty) {
+      Map<String, String> flags = Uri.splitQueryString(query.substring(1));
       cheatFlag = flags.containsKey("cheat");
       fastFlag = flags.containsKey("fast") || cheatFlag;
       if (flags.containsKey("board"))
