@@ -47,7 +47,7 @@ class FcApp extends PolymerElement {
     tableau = new Tableau();
 
     $["win"].hidden = true;
-    $["solve"].disabled = true;
+    $["solve"].disabled = !fastFlag;
     remainingCards = 52;
     boardForSolver = null;
 
