@@ -60,7 +60,7 @@ class CompoundMovePlanner {
     List<Pile> pivotTemporaries = concat(freeCells, childAvailableColumns);
 
     List<Transfer> plan = _createSimplePlan(pivotTransfer, pivotCount, pivotTemporaries);
-    plan.addAll(_createSimplePlan(transfer, count - pivotCount, pivotTemporaries));
+    plan.addAll(_createRecursivePlan(transfer, count - pivotCount, childAvailableColumns));
     plan.addAll(_createSimplePlan(unpivotTransfer, pivotCount, pivotTemporaries));
     return plan;
   }
