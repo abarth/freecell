@@ -13,14 +13,28 @@
         background-color: darkgreen;
         box-shadow: inset 0 0 5px lightgreen;
         border-radius: 6px;
+        position: relative;
       }
+
       img {
         display: block;
         width: 100%;
       }
+
+      .above {
+        /* FIXME: Need to override the deep selector for animations here. */
+        position: absolute !important;
+        top: 0;
+      }
     </style>
     <template if="{{ !pile.cards.isEmpty }}">
-      <fc-card card="{{ pile.cards[pile.cards.length - 1] }}"></fc-card>
+      <template if="{{ pile.cards.length >= 3 }}">
+        <fc-card class="above" card="{{ pile.cards[pile.cards.length - 3] }}"></fc-card>
+      </template>
+      <template if="{{ pile.cards.length >= 2 }}">
+        <fc-card card="{{ pile.cards[pile.cards.length - 2] }}"></fc-card>
+      </template>
+      <fc-card class="above" card="{{ pile.cards[pile.cards.length - 1] }}"></fc-card>
     </template>
     <template if="{{ pile.cards.isEmpty }}">
       <img src="../svg-cards/none.svg">

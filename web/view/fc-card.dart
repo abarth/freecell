@@ -67,9 +67,11 @@ class FcCard extends PolymerElement {
     double duration = min(max(distance / _kSettleVelocity, _kMinSettleDuration), _kMaxSettleDuration);
     classes.addAll(["moving", "glow"]);
     WebAnimations.animate(this, [{
-      "transform": "translate(${-displacement.x}px, ${-displacement.y}px)"
+      "transform": "translate(${-displacement.x}px, ${-displacement.y}px)",
+      "zIndex": "10",
     }, {
       "transform": "translate(0, 0)",
+      "zIndex": "10",
     }], {
       "duration": duration,
       "easing": "ease-in-out",
