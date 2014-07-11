@@ -10,8 +10,8 @@ class ViewDeck extends Deck {
 
   static List<Card> _createCards() {
     List<Card> cards = new List<Card>();
-    for (Suit suit in Suit.all){
-      for (Rank rank in Rank.all) {
+    for (Rank rank in Rank.all) {
+      for (Suit suit in Suit.all){
         cards.add(new ViewCard(suit, rank));
       }
     }

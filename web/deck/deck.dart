@@ -41,6 +41,7 @@ class Deck {
         _cards[i] = _cards[j];
         _cards[j] = card;
     }
+    _cards = new List.from(_cards.reversed);
   }
 
   bool get isEmpty => _cards.isEmpty;
