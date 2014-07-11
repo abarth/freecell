@@ -82,7 +82,9 @@ class FcApp extends PolymerElement {
 
   void handleFreecellSolved(CustomEvent event, String solution) {
     SolutionPlayer player = new SolutionPlayer(tableau, new Solution.parse(solution));
+    classes.add("animating");
     player.play().then((_) {
+      classes.remove("animating");
       handlePileChanged();
     });
   }
