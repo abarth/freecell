@@ -54,13 +54,12 @@ class FcPile extends PolymerElement {
   }
 
   void _stopDragging(Element element) {
-    element.classes.remove("moving");
+    element.classes.removeAll(["moving", "glow"]);
     element.style.transform = "";
   }
 
   void _startDragging(Element element) {
-    element.classes.add("moving");
-    element.style.transform = "";
+    element.classes.addAll(["moving", "glow"]);
   }
 
   void handleDrag(CustomEvent event) {
