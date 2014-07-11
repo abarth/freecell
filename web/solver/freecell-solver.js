@@ -55,6 +55,8 @@ window.freecell = window.freecell || {};
 
     function solve(board) {
         return new Promise(function(resolve, reject) {
+            var startTime = performance.now();
+
             var currentIterationLimit = kIterationsStep;
 
             var solver = freecell_solver_user_alloc();
@@ -111,6 +113,9 @@ window.freecell = window.freecell || {};
                     free(moveBuffer);
                     freecell_solver_user_free(solver);
                     solver = 0;
+
+                    var endTime = performance.now();
+                    console.log("Solved freecell board in " + (endTime - startTime) + "ms");
 
                     return resolve(solution.join('\n'));
                 }
