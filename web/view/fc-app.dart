@@ -26,8 +26,8 @@ class FcApp extends PolymerElement {
   bool cheatFlag = false;
 
   FcApp.created() : super.created() {
-    boardId = (new Random().nextInt(pow(2, 32)) + 1).toString();
-    String hash = window.location.hash;
+    newBoard();
+    String hash = window.location.search;
     if (hash != null && !hash.isEmpty) {
       Map<String, String> flags = Uri.splitQueryString(hash.substring(1));
       cheatFlag = flags.containsKey("cheat");
@@ -35,7 +35,6 @@ class FcApp extends PolymerElement {
       if (flags.containsKey("board"))
         boardId = flags["board"];
     }
-    deal();
   }
 
   void deal() {
@@ -81,6 +80,10 @@ class FcApp extends PolymerElement {
     boardForSolver = tableau.serialization;
   }
 
+  void boardIdChanged(String oldValue, String newValue) {
+    deal();
+  }
+
   void handleFreecellSolved(CustomEvent event, String solution) {
     SolutionPlayer player = new SolutionPlayer(tableau, new Solution.parse(solution));
     classes.add("animating");
@@ -88,6 +91,10 @@ class FcApp extends PolymerElement {
       classes.remove("animating");
       handlePileChanged();
     });
+  }
+
+  void newBoard() {
+    boardId = (new Random().nextInt(pow(2, 32)) + 1).toString();
   }
 
   void handlePileChanged() {
