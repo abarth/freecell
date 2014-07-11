@@ -16,8 +16,8 @@ class Deck {
 
   Deck() {
     _cards = new List<Card>();
-    for (Suit suit in Suit.all){
-      for (Rank rank in Rank.all) {
+    for (Rank rank in Rank.all) {
+      for (Suit suit in Suit.all){
         _cards.add(new Card(suit, rank));
       }
     }
