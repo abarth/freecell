@@ -27,7 +27,7 @@ class CompoundMovePlanner {
 
   List<Pile> _findFree(List<Pile> piles) {
     List<Pile> result = new List<Pile>();
-    for (Pile pile in tableau.cells) {
+    for (Pile pile in piles) {
       if (pile.isEmpty)
         result.add(pile);
     }
