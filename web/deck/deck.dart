@@ -28,10 +28,6 @@ class Deck {
     return new Card(suit, rank);
   }
 
-  Deck.of(List<Card> cards) {
-    _cards = new List.from(cards);
-  }
-
   List<Card> get cards => new List.from(_cards);
 
   void shuffle(int seed) {
