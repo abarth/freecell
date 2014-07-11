@@ -26,7 +26,7 @@ class FcApp extends PolymerElement {
   bool cheatFlag = false;
 
   FcApp.created() : super.created() {
-    newBoard();
+    boardId = _randomBoardId();
     String query = window.location.search;
     if (query != null && !query.isEmpty) {
       Map<String, String> flags = Uri.splitQueryString(query.substring(1));
@@ -35,6 +35,7 @@ class FcApp extends PolymerElement {
       if (flags.containsKey("board"))
         boardId = flags["board"];
     }
+    deal();
   }
 
   void deal() {
@@ -80,10 +81,6 @@ class FcApp extends PolymerElement {
     boardForSolver = tableau.serialization;
   }
 
-  void boardIdChanged(String oldValue, String newValue) {
-    deal();
-  }
-
   void handleFreecellSolved(CustomEvent event, String solution) {
     SolutionPlayer player = new SolutionPlayer(tableau, new Solution.parse(solution));
     classes.add("animating");
@@ -94,7 +91,8 @@ class FcApp extends PolymerElement {
   }
 
   void newBoard() {
-    boardId = (new Random().nextInt(pow(2, 32)) + 1).toString();
+    boardId = _randomBoardId();
+    deal();
   }
 
   void handlePileChanged() {
@@ -110,6 +108,10 @@ class FcApp extends PolymerElement {
     tableau.towers.forEach((tower) {
       remainingCards -= tower.cards.length;
     });
+  }
+
+  String _randomBoardId() {
+    return (new Random().nextInt(pow(2, 32)) + 1).toString();
   }
 
   void _flyAwayCards() {
