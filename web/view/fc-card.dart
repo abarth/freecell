@@ -61,7 +61,6 @@ class FcCard extends PolymerElement {
       "transform": "translate(${endX}px, ${endY}px)",
     }], {
       "duration": _kMaxSettleDuration * 3,
-      "delay": 100,
       "easing": "ease-in-out",
       "fill": "infinite",
     }).then((_) {
