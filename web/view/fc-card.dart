@@ -43,17 +43,21 @@ class FcCard extends PolymerElement {
     style.transform = "translate(${rect.left}px, ${rect.top}px)";
     style.zIndex = "${52 - card.flyAwayOrder}";
     style.marginTop = "0";
-    card.animate(this, [{
-      "transform": "translate(${rect.left}px, ${rect.top}px)",
-    }, {
-      "transform": "translate(${endX}px, ${endY}px)",
-    }], {
-      "duration": _kFlyAwayDuration,
-      "delay": card.flyAwayOrder * 75,
-      "easing": "ease-out",
-      "fill": "both",
-    }).then((_) {
-      classes.remove("moving");
+    async((_) {
+      async((_) {
+        card.animate(this, [{
+          "transform": "translate(${rect.left}px, ${rect.top}px)",
+        }, {
+          "transform": "translate(${endX}px, ${endY}px)",
+        }], {
+          "duration": _kFlyAwayDuration,
+          "delay": card.flyAwayOrder * 75,
+          "easing": "ease-out",
+          "fill": "both",
+        }).then((_) {
+          classes.remove("moving");
+        });
+      });
     });
   }
 
