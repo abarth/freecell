@@ -79,13 +79,18 @@ class FcApp extends PolymerElement {
   }
 
   void solve() {
+    $["solve"].disabled = true;
     boardForSolver = tableau.serialization;
   }
 
   void handleFreecellSolved(CustomEvent event, String solution) {
-    _solutionPlayer = new SolutionPlayer(tableau, new Solution.parse(solution));
     classes.add("animating");
-    _pumpSolutionPlayer();
+    async((_) {
+      _solutionPlayer = new SolutionPlayer(tableau, new Solution.parse(solution));
+      async((_) {
+        _pumpSolutionPlayer();
+      });
+    });
   }
 
   void handleCardMovementEnd() {
