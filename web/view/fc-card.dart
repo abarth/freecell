@@ -27,19 +27,6 @@ class FcCard extends PolymerElement {
   void attached() {
     isAttached = true;
     _registerCard();
-
-    // TODO(abarth): Scheduling this work using a microtask isn't quite right
-    // because there's not guarantee that we're inside requestAnimationFrame.
-    // We might be causing more layouts than necessary. Instead, Polymer needs
-    // an API that lets you schedule work to happen before the next frame. The
-    // |async| function is almost right, but it will push you to the next frame
-    // if it's called inside of requestAnimationFrame.
-    scheduleMicrotask(() {
-      if (card.flyAway)
-        _playFlyAway();
-      else
-        _playMovement();
-    });
   }
 
   void _playFlyAway() {
@@ -105,6 +92,20 @@ class FcCard extends PolymerElement {
       return;
     _unregisterCard();
     _registerCard();
+    // TODO(abarth): Scheduling this work using a microtask isn't quite right
+    // because there's not guarantee that we're inside requestAnimationFrame.
+    // We might be causing more layouts than necessary. Instead, Polymer needs
+    // an API that lets you schedule work to happen before the next frame. The
+    // |async| function is almost right, but it will push you to the next frame
+    // if it's called inside of requestAnimationFrame.
+    if (card == null)
+      return;
+    scheduleMicrotask(() {
+      if (card.flyAway)
+        _playFlyAway();
+      else
+        _playMovement();
+    });
   }
 
   void _registerCard() {
