@@ -25,6 +25,6 @@ class MSRandom implements Random {
   }
 
   bool nextBool() {
-    return nextDouble() > 0.5;
+    return nextDouble() < 0.5;
   }
 }
