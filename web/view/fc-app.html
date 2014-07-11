@@ -60,6 +60,12 @@
         position: relative;
         will-change: transform;
       }
+
+      .toolbar {
+        padding: 1em 16px;
+        color: white;
+        font-family: "Open Sans", sans-serif;
+      }
     </style>
     <div class="piles">
       <template repeat="{{ cell in tableau.cells }}">
@@ -74,7 +80,11 @@
         <fc-column pile="{{ column }}"></fc-column>
       </template>
     </div>
-    <button on-tap="{{ solve }}">Solve</button>
+    <div class="toolbar">
+      Board <input value="{{ boardId }}">
+      <button on-tap="{{ deal }}">Deal</button>
+      <button on-tap="{{ solve }}">Solve</button>
+    </div>
     <freecell-solver board="{{ boardForSolver }}" on-freecell-solved="{{ handleFreecellSolved }}"></freecell-solver>
   </template>
   <script type="application/dart" src="fc-app.dart"></script>

@@ -7,10 +7,10 @@ import '../deck/deck.dart';
 import 'fc-card.dart';
 
 class CardCoordinator {
-  List<Future<FcCard>> _fcCards = new List();
+  List<Future<FcCard>> _fcCards;
   LinkedHashMap<Card, FcCard> _cards;
   int _count = 0;
-  Completer _completer = new Completer();
+  Completer _completer;
 
   static final CardCoordinator instance = new CardCoordinator();
 
@@ -29,8 +29,11 @@ class CardCoordinator {
   }
 
   Future waitForDeck(Deck deck) {
+    _fcCards = new List();
+    _count = 0;
+    _completer = new Completer();
     _cards = new LinkedHashMap.fromIterable(deck.cards,
-        value:(value) { return null; });
+            value:(value) { return null; });
     return _completer.future;
   }
 }

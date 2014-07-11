@@ -17,10 +17,19 @@ import "card-coordinator.dart";
 class FcApp extends PolymerElement {
   @observable Tableau tableau;
   @observable String boardForSolver;
+  @published String boardId;
 
   FcApp.created() : super.created() {
-    // FIXME: Add UI to enter a seed.
-    int seed = new Random().nextInt(51);
+    boardId = (new Random().nextInt(pow(2, 32)) + 1).toString();
+    deal();
+  }
+
+  void deal() {
+    // For some reason thre is no 0th deal.
+    int seed = int.parse(boardId);
+    if (seed == 0)
+      return;
+
     Deck deck = new ViewDeck();
     deck.shuffle(seed);
 
