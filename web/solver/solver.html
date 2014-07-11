@@ -4,3 +4,22 @@
 
 <script src="libfreecell-solver.min.js"></script>
 <script src="solver.js"></script>
+
+<polymer-element name="freecell-solver" attributes="board solution">
+  <script>
+    Polymer({
+      boardChanged: function() {
+        if (!this.board) {
+          this.solution = null;
+          return;
+        }
+        freecell.solve(this.board).then(function(solution) {
+          this.solution = solution;
+        }.bind(this), function(error) {
+          this.solution = null;
+          console.log('stack' in error ? error.stack : error);
+        });
+      },
+    });
+  </script>
+</polymer-element>
