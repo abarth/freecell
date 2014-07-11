@@ -48,6 +48,7 @@ class FcApp extends PolymerElement {
     tableau = new Tableau();
 
     $["win"].hidden = true;
+    $["solve"].disabled = true;
     remainingCards = 52;
     boardForSolver = null;
 
@@ -90,6 +91,7 @@ class FcApp extends PolymerElement {
   }
 
   void handlePileChanged() {
+    $["solve"].disabled = true;
     if (tableau.hasWon) {
       remainingCards = 0;
       _flyAwayCards();
@@ -148,6 +150,7 @@ class FcApp extends PolymerElement {
       });
     })).then((_) {
       classes.remove("animating");
+      $["solve"].disabled = false;
     });
   }
 

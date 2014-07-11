@@ -118,7 +118,7 @@
       <div id="title">
         FreeCell Game #<input value="{{ boardId }}">
         <button on-tap="{{ deal }}">Deal</button>
-        <button on-tap="{{ solve }}">Solve</button>
+        <button id="solve" on-tap="{{ solve }}">Solve</button>
       </div>
       <div id="status">
         Cards Left: {{ remainingCards }}
