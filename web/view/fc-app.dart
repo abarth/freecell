@@ -16,6 +16,8 @@ import "card-coordinator.dart";
 @CustomTag("fc-app")
 class FcApp extends PolymerElement {
   @observable Tableau tableau;
+  @observable String boardForSolver;
+  @observable String solution;
 
   FcApp.created() : super.created() {
     // FIXME: Add UI to enter a seed.
@@ -29,6 +31,14 @@ class FcApp extends PolymerElement {
     tableau.deal(deck);
 
     classes.add("loading");
+  }
+
+  void solve() {
+    boardForSolver = tableau.serialization;
+  }
+
+  void solutionChanged(String oldValue, String newValue) {
+    print(solution);
   }
 
   void handleCardsLoaded(Iterable<FcCard> cards) {

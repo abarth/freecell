@@ -21,10 +21,26 @@ class Suit {
       case HEARTS:
         return Color.RED;
     }
+    assert(false);
     return null;
   }
 
   final String name;
+
+  String get serialization {
+    switch(this) {
+      case CLUBS:
+        return 'C';
+      case DIAMONDS:
+        return 'D';
+      case HEARTS:
+        return 'H';
+      case SPADES:
+        return 'S';
+    }
+    assert(false);
+    return null;
+  }
 
   const Suit._(this.name);
 }

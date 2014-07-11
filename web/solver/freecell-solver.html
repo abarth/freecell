@@ -10,6 +10,9 @@
 <polymer-element name="freecell-solver" attributes="board solution">
   <script>
     Polymer({
+      board: null,
+      solution: null,
+
       boardChanged: function() {
         if (!this.board) {
           this.solution = null;
@@ -20,7 +23,7 @@
         }.bind(this), function(error) {
           this.solution = null;
           console.log('stack' in error ? error.stack : error);
-        });
+        }.bind(this));
       },
     });
   </script>

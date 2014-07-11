@@ -27,5 +27,20 @@ class Rank {
     return value == other.value;
   }
 
+  String get serialization {
+    if (value < 10)
+      return value.toString();
+    if (value == 10)
+      return 'T';
+    if (value == 11)
+      return 'J';
+    if (value == 12)
+      return 'Q';
+    if (value == 13)
+      return 'K';
+    assert(false);
+    return null;
+  }
+
   Rank(this.value);
 }

@@ -74,7 +74,8 @@
         <fc-column pile="{{ column }}"></fc-column>
       </template>
     </div>
-    <freecell-solver></freecell-solver>
+    <button on-tap="{{ solve }}">Solve</button>
+    <freecell-solver board="{{ boardForSolver }}" solution="{{ solution }}"></freecell-solver>
   </template>
   <script type="application/dart" src="fc-app.dart"></script>
 </polymer-element>

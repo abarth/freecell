@@ -9,4 +9,8 @@ class Card {
   Rank rank;
 
   Card(this.suit, this.rank);
+
+  String get serialization {
+    return rank.serialization + suit.serialization;
+  }
 }

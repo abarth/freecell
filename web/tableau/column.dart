@@ -16,4 +16,12 @@ class Column extends Pile {
   bool canTake(Card card) {
     return !cards.isEmpty && cards.last == card;
   }
+
+  String get serialization {
+    String result = ':';
+    cards.forEach((card) {
+      result += " ${card.serialization}";
+    });
+    return result;
+  }
 }

@@ -35,6 +35,15 @@ class Tableau {
     return towers.every((tower) => tower.isFull);
   }
 
+  String get serialization {
+    String result = '';
+    // TODO(abarth): Add the foundations and the freecells to the serialization.
+    columns.forEach((column) {
+      result += "${column.serialization}\n";
+    });
+    return result;
+  }
+
   void deal(Deck deck) {
     int i = 0;
     while (!deck.isEmpty) {
