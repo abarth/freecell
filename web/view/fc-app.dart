@@ -17,7 +17,8 @@ import "card-coordinator.dart";
 class FcApp extends PolymerElement {
   @observable Tableau tableau;
   @observable String boardForSolver;
-  @published String boardId;
+  @observable String boardId;
+  @observable int remainingCards;
 
   FcApp.created() : super.created() {
     boardId = (new Random().nextInt(pow(2, 32)) + 1).toString();
