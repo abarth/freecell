@@ -6,10 +6,11 @@ library freecell.deck;
 
 import 'dart:math';
 
-part 'color.dart';
-part 'suit.dart';
-part 'rank.dart';
 part 'card.dart';
+part 'color.dart';
+part 'msrandom.dart';
+part 'rank.dart';
+part 'suit.dart';
 
 class Deck {
   List<Card> _cards;
@@ -32,12 +33,13 @@ class Deck {
   void shuffle() {
     if (_cards.isEmpty)
       return;
-    Random rng = new Random();
-    for (int i = _cards.length - 1; i > 0; --i) {
-      int nextIndex = rng.nextInt(i);
-      Card nextCard = _cards[nextIndex];
-      _cards[nextIndex] = _cards[i];
-      _cards[i] = nextCard;
+    var i = _cards.length;
+    var random = new MSRandom(new Random().nextInt(51));
+    while (--i > 0) {
+        int j = random.nextInt(i + 1);
+        Card card= _cards[i];
+        _cards[i] = _cards[j];
+        _cards[j] = card;
     }
   }
 
