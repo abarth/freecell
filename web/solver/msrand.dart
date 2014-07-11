@@ -21,7 +21,7 @@ class MSRandom implements Random {
   }
 
   double nextDouble() {
-    return _rand() % 101 / 100.0;
+    return _rand() % 100 / 100.0;
   }
 
   bool nextBool() {
