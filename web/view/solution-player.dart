@@ -8,40 +8,66 @@ import "../solver/solution.dart";
 
 import "card-coordinator.dart";
 
+class _CompoundMoveState {
+  Move move;
+  List<Pile> temporaries = new List<Pile>();
+  int windStep = 0;
+  int unwindStep = 0;
+  bool needsHeroStep = true;
+
+  _CompoundMoveState(this.move);
+}
+
 class SolutionPlayer {
+  static final _moveDelay = new Duration(milliseconds: 100);
+
   Tableau tableau;
   Solution solution;
   int _nextMove = 0;
   Completer _completer = new Completer();
-
-  static final _moveDelay = new Duration(milliseconds: 500);
+  _CompoundMoveState _compoundState;
 
   SolutionPlayer(this.tableau, this.solution);
 
   Future play() {
-    new Timer.periodic(_moveDelay, (timer) {
-      if (_nextMove >= solution.moves.length) {
-        timer.cancel();
-        _completer.complete();
-        return;
-      }
-      _performMove(solution.moves[_nextMove++]);
-    });
+    _scheduleNextMove();
     return _completer.future;
   }
 
+  void _scheduleNextMove() {
+    new Timer(_moveDelay, _performNextMove);
+  }
+
+  void _performNextMove() {
+    if (_nextMove >= solution.moves.length) {
+      _completer.complete();
+      return;
+    }
+    _performMove(solution.moves[_nextMove++]);
+  }
+
   void _performMove(Move move) {
-    if (move.count > 1)
-      return _performCompoundMove(move);
+    if (move.count > 1) {
+      _compoundState = new _CompoundMoveState(move);
+      _performCompoundMoveStep();
+      return;
+    }
 
     Pile source = _sourcePile(move);
     Card card = source.cards.last;
     Pile destination = _destiniationPile(move, card);
 
     _transferCard(card, source, destination);
+    _scheduleNextMove();
   }
 
-  void _performCompoundMove(Move move) {
+  void _scheduleCompoundMoveStep() {
+    new Timer(_moveDelay, _performCompoundMoveStep);
+  }
+
+  void _performCompoundMoveStep() {
+    Move move = _compoundState.move;
+
     assert(move.count > 1);
     assert(move.sourceType == 'stack');
     assert(move.destinationType == 'stack');
@@ -49,30 +75,42 @@ class SolutionPlayer {
     Pile source = _sourcePile(move);
     Pile destination = _destiniationPile(move, null);
 
-    List<Cell> usedCells = new List<Cell>();
-
-    for (int i = 0; i < move.count - 1; ++i) {
+    while (_compoundState.windStep < move.count - 1) {
       Card card = source.cards.last;
-      Cell freeCell = _findFreeCell(card);
-      usedCells.add(freeCell);
-      _transferCard(card, source, freeCell);
+      Pile temporary = _findTempory(card, destination);
+      _compoundState.temporaries.add(temporary);
+      _transferCard(card, source, temporary);
+      ++_compoundState.windStep;
+      _scheduleCompoundMoveStep();
+      return;
     }
 
-    _transferCard(source.cards.last, source, destination);
-
-    for (int i = usedCells.length - 1; i >= 0; --i) {
-      Cell cell = usedCells[i];
-      _transferCard(cell.cards.last, cell, destination);
+    if (_compoundState.needsHeroStep) {
+      _transferCard(source.cards.last, source, destination);
+      _compoundState.needsHeroStep = false;
+      _scheduleCompoundMoveStep();
+      return;
     }
+
+    while (_compoundState.unwindStep < _compoundState.temporaries.length) {
+      Pile temporary = _compoundState.temporaries[_compoundState.temporaries.length - _compoundState.unwindStep - 1];
+      _transferCard(temporary.cards.last, temporary, destination);
+      ++_compoundState.unwindStep;
+      _scheduleCompoundMoveStep();
+      return;
+    }
+
+    _compoundState = null;
+    _performNextMove();
   }
 
   void _transferCard(Card card, Pile source, Pile destination) {
     assert(source.canTake(card));
     assert(destination.canAccept(card));
 
-    _willRemoveFromPile(card);
-    source.cards.remove(card);
+    // _willRemoveFromPile(card);
     destination.accept(card);
+    source.cards.remove(card);
   }
 
   Pile _sourcePile(Move move) {
@@ -102,10 +140,16 @@ class SolutionPlayer {
     return null;
   }
 
-  Cell _findFreeCell(Card card) {
+  Pile _findTempory(Card card, Pile excluded) {
     for (Cell cell in tableau.cells) {
       if (cell.canAccept(card))
         return cell;
+    }
+    for (Column column in tableau.columns) {
+      if (!column.isEmpty || column == excluded)
+        continue;
+      if (column.canAccept(card))
+        return column;
     }
     assert(false);
     return null;
