@@ -19,6 +19,7 @@ class FcCard extends PolymerElement {
   static const double _kSettleVelocity = 1.5; // dips per ms
   static const double _kMinSettleDuration = 200.0; // ms
   static const double _kMaxSettleDuration = 500.0; // ms
+  static const double _kFlyAwayDuration = 1500.0; // ms
 
   FcCard.created() : super.created() {
   }
@@ -34,42 +35,47 @@ class FcCard extends PolymerElement {
     // |async| function is almost right, but it will push you to the next frame
     // if it's called inside of requestAnimationFrame.
     scheduleMicrotask(() {
-      Point displacement = card.updateClientRect(getBoundingClientRect());
-      if (displacement == null)
-        return;
-      if (card.flyAway) {
-        _playFlyAway(displacement);
-      } else
-        _playMovement(displacement);
+      if (card.flyAway)
+        _playFlyAway();
+      else
+        _playMovement();
     });
   }
 
-  void _playFlyAway(Point displacement) {
-    classes.add("moving");
+  void _playFlyAway() {
+    classes.add("moving fly-away");
     Random random = new Random();
     Rectangle rootRect = document.body.getBoundingClientRect();
-    Rectangle rect = getBoundingClientRect();
+    Rectangle rect = card.lastClientRect;
     double endX = rootRect.width + rect.width;
     double endY = rootRect.height + rect.height;
     if (random.nextBool())
       endX *= -1;
+    style.width = rect.width.toString() + "px";
+    style.height = rect.height.toString() + "px";
+    style.transform = "translate(${rect.left}px, ${rect.top}px)";
+    style.zIndex = "${52 - card.flyAwayOrder}";
+    style.marginTop = "0";
     WebAnimations.animate(this, [
     {
-      "transform": "translate(${-displacement.x}px, ${-displacement.y}px)",
+      "transform": "translate(${rect.left}px, ${rect.top}px)",
     },
     {
       "transform": "translate(${endX}px, ${endY}px)",
     }], {
-      "duration": _kMaxSettleDuration * 3,
-      "easing": "ease-in-out",
-      "fill": "infinite",
+      "duration": _kFlyAwayDuration,
+      "delay": card.flyAwayOrder * 75,
+      "easing": "ease-out",
+      "fill": "both",
     }).then((_) {
       classes.remove("moving");
-      hidden = true;
     });
   }
 
-  void _playMovement(Point displacement) {
+  void _playMovement() {
+    Point displacement = card.updateClientRect(getBoundingClientRect());
+    if (displacement == null)
+      return;
     double distance = displacement.magnitude;
     double duration = min(max(distance / _kSettleVelocity, _kMinSettleDuration), _kMaxSettleDuration);
     classes.addAll(["moving", "glow"]);

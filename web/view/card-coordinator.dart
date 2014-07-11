@@ -30,7 +30,8 @@ class CardCoordinator {
     _fcCards.remove(future);
   }
 
-  Future<List<FcCard>> get cards => Future.wait(_fcCards);
+  Future<List<FcCard>> get fcCards => Future.wait(_fcCards);
+  Iterable<Card> get cards => _cards.keys;
 
   Future waitForDeck(Deck deck) {
     _fcCards = new List();

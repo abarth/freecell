@@ -33,6 +33,7 @@ class FcApp extends PolymerElement {
     if (seed == 0)
       return;
 
+    $["win"].hidden = true;
     remainingCards = 52;
 
     Deck deck = new ViewDeck();
@@ -70,24 +71,24 @@ class FcApp extends PolymerElement {
   }
 
   void _flyAwayCards() {
-    Random random = new Random();
-    CardCoordinator.instance.cards.then((List<FcCard> fcCards) {
-      fcCards.forEach((fcCard) {
-        ViewCard card = fcCard.card;
-        if (card == null || card.flyAway)
-          return;
-        card.flyAway = true;
-        fcCard.willRemoveFromPile();
+    CardCoordinator.instance.fcCards.then((List<FcCard> cards) {
+      scheduleMicrotask(() {
+        $["win"].hidden = false;
+        Random random = new Random();
         tableau.towers.forEach((tower) {
-          tower.cards.remove(card);
+          ViewCard card = tower.cards.last;
+          FcCard fcCard = CardCoordinator.instance.viewForCard(card);
+          Rectangle rect = fcCard.getBoundingClientRect();
+          int i = 0;
+          while (!tower.cards.isEmpty) {
+            ViewCard card = tower.cards.removeLast();
+            card.flyAway = true;
+            card.flyAwayOrder = i++;
+            card.updateClientRect(rect);
+            tableau.columns[0].cards.add(card);
+          }
         });
-        tableau.columns[random.nextInt(kNumberOfColumns)].cards.add(card);
       });
-      if (tableau.towers.any((tower) => !tower.isEmpty)) {
-        async((_) {
-          _flyAwayCards();
-        });
-      }
     });
   }
 

@@ -7,6 +7,7 @@ part of freecell.viewmodel;
 class ViewCard extends Card {
   Rectangle lastClientRect;
   bool flyAway = false;
+  int flyAwayOrder = 0;
 
   Point updateClientRect(Rectangle newClientRect) {
     Rectangle oldClientRect = lastClientRect;
