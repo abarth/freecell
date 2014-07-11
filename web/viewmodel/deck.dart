@@ -5,16 +5,7 @@
 part of freecell.viewmodel;
 
 class ViewDeck extends Deck {
-  ViewDeck() : super(_createCards()) {
-  }
-
-  static List<Card> _createCards() {
-    List<Card> cards = new List<Card>();
-    for (Rank rank in Rank.all) {
-      for (Suit suit in Suit.all){
-        cards.add(new ViewCard(suit, rank));
-      }
-    }
-    return cards;
+  Card createCard(Suit suit, Rank rank) {
+    return new ViewCard(suit, rank);
   }
 }
