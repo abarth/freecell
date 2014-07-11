@@ -38,6 +38,7 @@ class FcCard extends PolymerElement {
     double endY = rootRect.height + rect.height;
     if (random.nextBool())
       endX *= -1;
+    endX /= (random.nextInt(5) + 1);
     style.width = rect.width.toString() + "px";
     style.height = rect.height.toString() + "px";
     style.transform = "translate(${rect.left}px, ${rect.top}px)";
