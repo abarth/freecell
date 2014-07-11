@@ -22,30 +22,58 @@ class FcApp extends PolymerElement {
   @observable String boardId;
   @observable int remainingCards;
 
+  bool fastFlag = false;
+  bool cheatFlag = false;
+
   FcApp.created() : super.created() {
     boardId = (new Random().nextInt(pow(2, 32)) + 1).toString();
+    String hash = window.location.hash;
+    if (hash != null) {
+      Map<String, String> flags = Uri.splitQueryString(hash.substring(1));
+      cheatFlag = flags.containsKey("cheat");
+      fastFlag = flags.containsKey("fast") || cheatFlag;
+      if (flags.containsKey("board"))
+        boardId = flags["board"];
+    }
     deal();
   }
 
   void deal() {
     // For some reason thre is no 0th deal.
     int seed = int.parse(boardId);
-    if (seed == 0)
+    if (seed <= 0)
       return;
+
+    Deck deck = new ViewDeck();
+    tableau = new Tableau();
 
     $["win"].hidden = true;
     remainingCards = 52;
     boardForSolver = null;
 
-    Deck deck = new ViewDeck();
+    if (cheatFlag) {
+      _dealCheat(deck);
+      return;
+    }
+
     deck.shuffle(seed);
+    classes.add("loading");
 
     CardCoordinator.instance.waitForDeck(deck).then(handleCardsLoaded);
 
-    tableau = new Tableau();
     tableau.deal(deck);
+  }
 
-    classes.add("loading");
+  void _dealCheat(Deck deck) {
+    int i = 0;
+    List<Card> cards = new List.from(deck.cards);
+    while (cards.length > 1) {
+      Card card = cards.removeAt(0);
+      tableau.towers[i].cards.add(card);
+      i = (i + 1) % kNumberOfTowers;
+    }
+    tableau.columns[0].cards.add(cards.removeAt(0));
+    CardCoordinator.instance.waitForDeck(deck);
   }
 
   void solve() {
@@ -95,7 +123,7 @@ class FcApp extends PolymerElement {
 
   void handleCardsLoaded(Iterable<FcCard> cards) {
     classes.remove("loading");
-    if (window.location.hash != null && window.location.hash.contains("fast"))
+    if (fastFlag)
       return;
     classes.add("animating");
     Rectangle rootRect = getBoundingClientRect();
