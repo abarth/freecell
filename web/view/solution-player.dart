@@ -25,6 +25,12 @@ class CompoundMovePlanner {
     freeColumns = _findFree(tableau.columns);
   }
 
+  static List<Pile> concat(List<Pile> a, List<Pile> b) {
+    List<Pile> result = new List.from(a);
+    result.addAll(b);
+    return result;
+  }
+
   List<Pile> _findFree(List<Pile> piles) {
     List<Pile> result = new List<Pile>();
     for (Pile pile in piles) {
@@ -35,25 +41,44 @@ class CompoundMovePlanner {
   }
 
   List<Transfer> plan(Transfer transfer, int count) {
-    if (count <= freeCells.length + freeColumns.length + 1)
-      return _createSimplePlan(transfer, count);
-    assert(false);
-    return null;
+    List<Pile> availableColumns = new List.from(freeColumns);
+    availableColumns.remove(transfer.destination);
+    return _createRecursivePlan(transfer, count, availableColumns);
   }
 
-  List<Transfer> _createSimplePlan(Transfer transfer, int count) {
+  List<Transfer> _createRecursivePlan(Transfer transfer, int count, List<Pile> availableColumns) {
+    if (count <= freeCells.length + availableColumns.length + 1)
+      return _createSimplePlan(transfer, count, concat(freeCells, availableColumns));
+
+    List<Pile> childAvailableColumns = new List.from(availableColumns);
+    Pile pivot = childAvailableColumns.removeLast();
+
+    Transfer pivotTransfer = new Transfer(transfer.source, pivot);
+    Transfer unpivotTransfer = new Transfer(pivot, transfer.destination);
+
+    int pivotCount = freeCells.length + childAvailableColumns.length + 1;
+    List<Pile> pivotTemporaries = concat(freeCells, childAvailableColumns);
+
+    List<Transfer> plan = _createSimplePlan(pivotTransfer, pivotCount, pivotTemporaries);
+    plan.addAll(_createSimplePlan(transfer, count - pivotCount, pivotTemporaries));
+    plan.addAll(_createSimplePlan(unpivotTransfer, pivotCount, pivotTemporaries));
+    return plan;
+  }
+
+  List<Transfer> _createSimplePlan(Transfer transfer, int count, List<Pile> temporaries) {
+    assert(!temporaries.contains(transfer.source));
+    assert(!temporaries.contains(transfer.destination));
+
     List<Transfer> plan = new List<Transfer>();
 
-    List<Pile> temporaries = new List.from(freeCells);
-    temporaries.addAll(freeColumns);
-
+    int nextTemporary = 0;
     for (int i = 0; i < count - 1; ++i)
-      plan.add(new Transfer(transfer.source, temporaries[i]));
+      plan.add(new Transfer(transfer.source, temporaries[nextTemporary++]));
 
     plan.add(transfer);
 
-    for (int i = count - 2; i >= 0; --i)
-      plan.add(new Transfer(temporaries[i], transfer.destination));
+    while (nextTemporary > 0)
+      plan.add(new Transfer(temporaries[--nextTemporary], transfer.destination));
 
     return plan;
   }
