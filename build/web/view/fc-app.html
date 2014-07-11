@@ -1,0 +1,150 @@
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="../../packages/polymer/polymer.html">
+
+<link rel="import" href="../solver/freecell-solver.html">
+
+<link rel="import" href="fc-card.html">
+<link rel="import" href="fc-collapsed-pile.html">
+<link rel="import" href="fc-column.html">
+
+<polymer-element name="fc-app"
+    on-place-card="{{ handlePlaceCard }}"
+    on-pile-changed="{{ handlePileChanged }}"
+    on-card-movement-end="{{ handleCardMovementEnd }}">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .columns, .piles {
+        display: flex;
+        padding: 3%;
+        box-sizing: border-box;
+      }
+
+      fc-collapsed-pile {
+        flex: 1;
+        flex-shrink: 0;
+      }
+
+      fc-collapsed-pile:nth-child(2),
+      fc-collapsed-pile:nth-child(3),
+      fc-collapsed-pile:nth-child(4),
+      fc-collapsed-pile:nth-child(7),
+      fc-collapsed-pile:nth-child(8),
+      fc-collapsed-pile:nth-child(9) {
+        margin-right: 0.2%;
+      }
+
+      fc-collapsed-pile:nth-child(5) {
+        margin-right: 5.8%;
+      }
+
+      fc-column {
+        flex: 1;
+        flex-shrink: 0;
+        flex-direction: column;
+        margin-right: 1%;
+      }
+
+      fc-column:last-child {
+        margin-right: 0;
+      }
+
+      :host(.loading) /deep/ fc-card {
+        visibility: hidden;
+      }
+
+      :host(.animating) /deep/ fc-card {
+        position: relative;
+        will-change: transform;
+      }
+
+      #toolbar {
+        display: flex;
+        padding: 2px 8px;
+        background: #EDE8E8;
+        color: #1D1E19;
+        font-size: 12px;
+        border-bottom: 1px solid #565656;
+        box-shadow: 0 3px 10px #444;
+      }
+
+      #title {
+        flex: 1;
+        display: flex;
+        align-items: center;
+      }
+
+      #status {
+        display: flex;
+        align-items: center;
+      }
+
+      #title input {
+        padding: 4px;
+        border: 1px solid #565656;
+        font-family: "Open Sans", sans-serif;
+        font-size: 1em;
+      }
+
+      #title button {
+        padding: 4px;
+        border: 1px solid #565656;
+        background: #C5C5C5 -webkit-linear-gradient(rgba(233, 233, 233, 1.0), rgba(178, 178, 178, 1.0));
+        margin-left: 4px;
+        align-self: stretch;
+      }
+
+      #win {
+        font-size: 4em;
+        color: #E0D662;
+        font-weight: bold;
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        pointer-events: none;
+        z-index: 100;
+        opacity: 0.8;
+      }
+    </style>
+    <div id="toolbar">
+      <div id="title">
+        FreeCell Game #<input value="{{ boardId }}">
+        <button on-tap="{{ deal }}">Deal</button>
+        <button id="solve" on-tap="{{ solve }}">Solve</button>
+        <button on-tap="{{ newBoard }}">New</button>
+      </div>
+      <div id="status">
+        Cards Left: {{ remainingCards }}
+      </div>
+    </div>
+    <div id="win" hidden>
+      You won!
+    </div>
+    <div class="piles">
+      <template repeat="{{ cell in tableau.cells }}">
+        <fc-collapsed-pile pile="{{ cell }}"></fc-collapsed-pile>
+      </template>
+      <template repeat="{{ tower in tableau.towers }}">
+        <fc-collapsed-pile pile="{{ tower }}"></fc-collapsed-pile>
+      </template>
+    </div>
+    <div class="columns">
+      <template repeat="{{ column in tableau.columns }}">
+        <fc-column pile="{{ column }}"></fc-column>
+      </template>
+    </div>
+    <freecell-solver board="{{ boardForSolver }}" on-freecell-solved="{{ handleFreecellSolved }}"></freecell-solver>
+  </template>
+  <script type="application/dart" src="fc-app.dart"></script>
+</polymer-element>

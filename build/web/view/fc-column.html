@@ -1,0 +1,33 @@
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="../../packages/polymer/polymer.html">
+
+<link rel="import" href="fc-card.html">
+<link rel="import" href="fc-pile.html">
+
+<polymer-element name="fc-column" extends="fc-pile">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      fc-card {
+        margin-top: -110%;
+      }
+
+      .card-0 {
+        margin-top: 0;
+      }
+    </style>
+    <template repeat="{{ item in pile.cards | enumerate }}">
+      <fc-card card="{{ item.value }}" class="card-{{ item.index }}"></fc-card>
+    </template>
+    <template if="{{ pile.cards.isEmpty }}">
+      <img width="100%" src="../svg-cards/none.svg">
+    </template>
+  </template>
+  <script type="application/dart" src="fc-column.dart"></script>
+</polymer-element>

@@ -1,0 +1,1 @@
+{"experimental_bootstrap":false,"script_ids":[["freecell","web/solver/freecell-solver.dart"],["freecell","web/view/fc-drag-drop.dart"],["freecell","web/view/fc-card.dart"],["freecell","web/view/fc-pile.dart"],["freecell","web/view/fc-collapsed-pile.dart"],["freecell","web/view/fc-column.dart"],["freecell","web/view/fc-app.dart"],["freecell","web/freecell.html.0.dart"]]}
