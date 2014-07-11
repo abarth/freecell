@@ -5,7 +5,10 @@
 library freecell.viewmodel;
 
 import 'dart:math';
+import 'dart:html';
+import 'dart:async';
 import '../deck/deck.dart';
+import '../polyfills/webanimations.dart';
 
 part 'card.dart';
 part 'deck.dart';

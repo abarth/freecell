@@ -7,7 +7,6 @@ import "dart:math";
 
 import "../deck/deck.dart";
 import "../viewmodel/viewmodel.dart";
-import "../polyfills/webanimations.dart";
 import "card-coordinator.dart";
 
 @CustomTag("fc-card")
@@ -44,7 +43,7 @@ class FcCard extends PolymerElement {
     style.transform = "translate(${rect.left}px, ${rect.top}px)";
     style.zIndex = "${52 - card.flyAwayOrder}";
     style.marginTop = "0";
-    WebAnimations.animate(this, [{
+    card.animate(this, [{
       "transform": "translate(${rect.left}px, ${rect.top}px)",
     }, {
       "transform": "translate(${endX}px, ${endY}px)",
@@ -65,7 +64,7 @@ class FcCard extends PolymerElement {
     double distance = displacement.magnitude;
     double duration = min(max(distance / _kSettleVelocity, _kMinSettleDuration), _kMaxSettleDuration);
     classes.addAll(["moving", "glow"]);
-    WebAnimations.animate(this, [{
+    card.animate(this, [{
       "transform": "translate(${-displacement.x}px, ${-displacement.y}px)",
       "zIndex": "10",
     }, {

@@ -8,17 +8,34 @@ import "dart:js";
 import "dart:async";
 import "dart:html";
 
-class WebAnimations {
-  static Future animate(Element target, List<Map<String, String>> keyFrames, Map<String, dynamic> timingInfo) {
-    JsObject object = new JsObject.fromBrowserObject(target);
-    if (!object.hasProperty("animate"))
-      return new Future.value();
-    JsObject player = object.callMethod("animate",
-        [new JsObject.jsify(keyFrames), new JsObject.jsify(timingInfo)]);
+class AnimationPlayer {
+  JsObject _player;
+  Future finish;
+
+  AnimationPlayer(JsObject this._player) {
     Completer completer = new Completer();
-    player.callMethod("addEventListener", ["finish", (event) {
+    _player.callMethod("addEventListener", ["finish", (event) {
       completer.complete();
     }]);
-    return completer.future;
+    finish = completer.future;
+  }
+
+  AnimationPlayer.stub() {
+    finish = new Future.value();
+  }
+
+  void cancel() {
+    if (_player != null)
+      _player.callMethod("cancel");
+  }
+}
+
+class WebAnimations {
+  static AnimationPlayer animate(Element target, List<Map<String, String>> keyFrames, Map<String, dynamic> timingInfo) {
+    JsObject object = new JsObject.fromBrowserObject(target);
+    if (!object.hasProperty("animate"))
+      return new AnimationPlayer.stub();
+    return new AnimationPlayer(object.callMethod("animate",
+        [new JsObject.jsify(keyFrames), new JsObject.jsify(timingInfo)]));
   }
 }

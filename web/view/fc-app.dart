@@ -158,7 +158,7 @@ class FcApp extends PolymerElement {
         "delay": --count * 75,
         "fill": "backwards",
         "easing": "ease-in-out",
-      });
+      }).finish;
     })).then((_) {
       classes.remove("animating");
       $["solve"].disabled = false;
