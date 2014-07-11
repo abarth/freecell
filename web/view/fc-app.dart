@@ -101,7 +101,9 @@ class FcApp extends PolymerElement {
     $["solve"].disabled = true;
     if (tableau.hasWon) {
       remainingCards = 0;
-      _flyAwayCards();
+      asyncTimer(() {
+        _flyAwayCards();
+      }, new Duration(milliseconds:500));
       return;
     }
     remainingCards = 52;
