@@ -35,7 +35,7 @@ class CompoundMovePlanner {
   }
 
   List<Transfer> plan(Transfer transfer, int count) {
-    if (count <= freeCells.length + 1)
+    if (count <= freeCells.length + freeColumns.length + 1)
       return _createSimplePlan(transfer, count);
     assert(false);
     return null;
@@ -44,13 +44,16 @@ class CompoundMovePlanner {
   List<Transfer> _createSimplePlan(Transfer transfer, int count) {
     List<Transfer> plan = new List<Transfer>();
 
+    List<Pile> temporaries = new List.from(freeCells);
+    temporaries.addAll(freeColumns);
+
     for (int i = 0; i < count - 1; ++i)
-      plan.add(new Transfer(transfer.source, freeCells[i]));
+      plan.add(new Transfer(transfer.source, temporaries[i]));
 
     plan.add(transfer);
 
     for (int i = count - 2; i >= 0; --i)
-      plan.add(new Transfer(freeCells[i], transfer.destination));
+      plan.add(new Transfer(temporaries[i], transfer.destination));
 
     return plan;
   }
