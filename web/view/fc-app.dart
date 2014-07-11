@@ -28,7 +28,7 @@ class FcApp extends PolymerElement {
   FcApp.created() : super.created() {
     boardId = (new Random().nextInt(pow(2, 32)) + 1).toString();
     String hash = window.location.hash;
-    if (hash != null) {
+    if (hash != null && !hash.isEmpty) {
       Map<String, String> flags = Uri.splitQueryString(hash.substring(1));
       cheatFlag = flags.containsKey("cheat");
       fastFlag = flags.containsKey("fast") || cheatFlag;
