@@ -15741,6 +15741,9 @@ var $$ = {};
     formatUrl$1: [function(receiver, card) {
       return "svg-cards/" + H.S(J.get$value$x(card.get$rank())) + "_of_" + H.S(J.get$name$x(card.get$suit())) + ".svg";
     }, "call$1", "get$formatUrl", 2, 0, 116, 111],
+    FcCard$created$0: function(receiver) {
+      receiver.setAttribute("touch-action", "none");
+    },
     $isFcCard: true,
     static: {"^": "FcCard__kSettleVelocity,FcCard__kMinSettleDuration,FcCard__kMaxSettleDuration,FcCard__kFlyAwayDuration", FcCard$created: function(receiver) {
         var t1, t2;
@@ -15755,6 +15758,7 @@ var $$ = {};
         receiver.polymer$Polymer$$ = t2;
         C.FcCard_methods.Element$created$0(receiver);
         C.FcCard_methods.PolymerElement$created$0(receiver);
+        C.FcCard_methods.FcCard$created$0(receiver);
         return receiver;
       }}
   },

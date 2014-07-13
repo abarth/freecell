@@ -21,6 +21,7 @@ class FcCard extends PolymerElement with ChangeNotifier  {
   static const double _kFlyAwayDuration = 1500.0; // ms
 
   FcCard.created() : super.created() {
+    attributes["touch-action"] = "none";
   }
 
   void attached() {
