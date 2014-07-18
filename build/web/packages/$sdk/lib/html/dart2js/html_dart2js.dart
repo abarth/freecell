@@ -11981,7 +11981,7 @@ class ErrorEvent extends Event native "ErrorEvent" {
 
 
 @DomName('Event')
-class Event extends Interceptor native "Event,InputEvent" {
+class Event extends Interceptor native "Event,InputEvent,ClipboardEvent" {
   // In JS, canBubble and cancelable are technically required parameters to
   // init*Event. In practice, though, if they aren't provided they simply
   // default to false (since that's Boolean(undefined)).
@@ -12090,6 +12090,7 @@ class Event extends Interceptor native "Event,InputEvent" {
   @DomName('Event.clipboardData')
   @DocsEditable()
   @SupportedBrowser(SupportedBrowser.CHROME)
+  @SupportedBrowser(SupportedBrowser.FIREFOX)
   @SupportedBrowser(SupportedBrowser.SAFARI)
   @Experimental()
   // Part of copy/paste
@@ -12293,10 +12294,10 @@ class EventSource extends EventTarget native "EventSource" {
  *
  * Custom events can be declared as:
  *
- *    class DataGenerator {
- *      static EventStreamProvider<Event> dataEvent =
- *          new EventStreamProvider('data');
- *    }
+ *     class DataGenerator {
+ *       static EventStreamProvider<Event> dataEvent =
+ *           new EventStreamProvider('data');
+ *     }
  *
  * Then listeners should access the event with:
  *
@@ -18414,6 +18415,12 @@ class MessageEvent extends Event native "MessageEvent" {
       Window source, List messagePorts}) {
     if (source == null) {
       source = window;
+    }
+    if (!Device.isIE) { // TODO: This if check should be removed once IE
+      // implements the constructor.
+      return JS('MessageEvent', 'new MessageEvent(#, {bubbles: #, cancelable: #, data: #, origin: #, lastEventId: #, source: #, ports: #})',
+          type, canBubble, cancelable, data, origin, lastEventId, source,
+          messagePorts);
     }
     var event = document._createEvent("MessageEvent");
     event._initMessageEvent(type, canBubble, cancelable, data, origin,
@@ -30120,7 +30127,7 @@ class _JenkinsSmiHash {
 
 @DocsEditable()
 @DomName('ClientRectList')
-class _ClientRectList extends Interceptor with ListMixin<Rectangle>, ImmutableListMixin<Rectangle> implements List<Rectangle>, JavaScriptIndexingBehavior native "ClientRectList" {
+class _ClientRectList extends Interceptor with ListMixin<Rectangle>, ImmutableListMixin<Rectangle> implements List<Rectangle>, JavaScriptIndexingBehavior native "ClientRectList,DOMRectList" {
   // To suppress missing implicit constructor warnings.
   factory _ClientRectList._() { throw new UnsupportedError("Not supported"); }
 

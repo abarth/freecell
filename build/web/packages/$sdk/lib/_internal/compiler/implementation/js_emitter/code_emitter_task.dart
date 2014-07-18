@@ -18,6 +18,11 @@ class CodeEmitterTask extends CompilerTask {
   final InterceptorEmitter interceptorEmitter = new InterceptorEmitter();
   final MetadataEmitter metadataEmitter = new MetadataEmitter();
 
+  final Set<Constant> cachedEmittedConstants;
+  final CodeBuffer cachedEmittedConstantsBuffer = new CodeBuffer();
+  final Map<Element, ClassBuilder> cachedClassBuilders;
+  final Set<Element> cachedElements;
+
   bool needsDefineClass = false;
   bool needsMixinSupport = false;
   bool needsLazyInitializer = false;
@@ -98,6 +103,9 @@ class CodeEmitterTask extends CompilerTask {
   CodeEmitterTask(Compiler compiler, Namer namer, this.generateSourceMap)
       : this.namer = namer,
         constantEmitter = new ConstantEmitter(compiler, namer),
+        cachedEmittedConstants = compiler.cacheStrategy.newSet(),
+        cachedClassBuilders = compiler.cacheStrategy.newMap(),
+        cachedElements = compiler.cacheStrategy.newSet(),
         super(compiler) {
     nativeEmitter = new NativeEmitter(this);
     containerBuilder.task = this;
@@ -653,7 +661,8 @@ class CodeEmitterTask extends CompilerTask {
         elementOrSelector is Element &&
         // Make sure to retain names of unnamed constructors, and
         // for common native types.
-        (name == '' && backend.isNeededForReflection(elementOrSelector) ||
+        ((name == '' &&
+          backend.isAccessibleByReflection(elementOrSelector)) ||
          _isNativeTypeNeedingReflectionName(elementOrSelector))) {
 
       // TODO(ahe): Enable the next line when I can tell the difference between
@@ -766,8 +775,23 @@ class CodeEmitterTask extends CompilerTask {
 
   void generateClass(ClassElement classElement, ClassBuilder properties) {
     compiler.withCurrentElement(classElement, () {
-      classEmitter.generateClass(
-          classElement, properties, additionalProperties[classElement]);
+      if (compiler.hasIncrementalSupport) {
+        ClassBuilder builder =
+            cachedClassBuilders.putIfAbsent(classElement, () {
+              ClassBuilder builder = new ClassBuilder(namer);
+              classEmitter.generateClass(
+                  classElement, builder, additionalProperties[classElement]);
+              return builder;
+            });
+        invariant(classElement, builder.fields.isEmpty);
+        invariant(classElement, builder.superName == null);
+        invariant(classElement, builder.functionType == null);
+        invariant(classElement, builder.fieldMetadata == null);
+        properties.properties.addAll(builder.properties);
+      } else {
+        classEmitter.generateClass(
+            classElement, properties, additionalProperties[classElement]);
+      }
     });
   }
 
@@ -901,7 +925,15 @@ class CodeEmitterTask extends CompilerTask {
   void emitCompileTimeConstants(CodeBuffer buffer, OutputUnit outputUnit) {
     List<Constant> constants = outputConstantLists[outputUnit];
     if (constants == null) return;
+    bool isMainBuffer = buffer == mainBuffer;
+    if (compiler.hasIncrementalSupport && isMainBuffer) {
+      buffer = cachedEmittedConstantsBuffer;
+    }
     for (Constant constant in constants) {
+      if (compiler.hasIncrementalSupport && isMainBuffer) {
+        if (cachedEmittedConstants.contains(constant)) continue;
+        cachedEmittedConstants.add(constant);
+      }
       String name = namer.constantName(constant);
       if (constant.isList) emitMakeConstantListIfNotEmitted(buffer);
       jsAst.Expression init = js('#.# = #',
@@ -909,6 +941,9 @@ class CodeEmitterTask extends CompilerTask {
            constantInitializerExpression(constant)]);
       buffer.write(jsAst.prettyPrint(init, compiler));
       buffer.write('$N');
+    }
+    if (compiler.hasIncrementalSupport && isMainBuffer) {
+      mainBuffer.add(cachedEmittedConstantsBuffer);
     }
   }
 
@@ -1024,9 +1059,9 @@ class CodeEmitterTask extends CompilerTask {
     if (compiler.isMockCompilation) return;
     Element main = compiler.mainFunction;
     jsAst.Expression mainCallClosure = null;
-    if (compiler.hasIsolateSupport()) {
+    if (compiler.hasIsolateSupport) {
       Element isolateMain =
-        compiler.isolateHelperLibrary.find(Compiler.START_ROOT_ISOLATE);
+        backend.isolateHelperLibrary.find(JavaScriptBackend.START_ROOT_ISOLATE);
       mainCallClosure = buildIsolateSetupClosure(main, isolateMain);
     } else {
       mainCallClosure = namer.elementAccess(main);
@@ -1094,7 +1129,7 @@ class CodeEmitterTask extends CompilerTask {
   void computeNeededConstants() {
     JavaScriptConstantCompiler handler = backend.constants;
     List<Constant> constants = handler.getConstantsForEmission(
-        compareConstants);
+        compiler.hasIncrementalSupport ? null : compareConstants);
     for (Constant constant in constants) {
       if (isConstantInlinedOrAlreadyEmitted(constant)) continue;
       OutputUnit constantUnit =
@@ -1264,10 +1299,17 @@ class CodeEmitterTask extends CompilerTask {
   }
 
   void writeLibraryDescriptors(LibraryElement library) {
-    var uri = library.canonicalUri;
-    if (uri.scheme == 'file' && compiler.outputUri != null) {
-      uri = relativize(compiler.outputUri, library.canonicalUri, false);
+    var uri = "";
+    if (!compiler.enableMinification || backend.mustRetainUris) {
+      uri = library.canonicalUri;
+      if (uri.scheme == 'file' && compiler.outputUri != null) {
+        uri = relativize(compiler.outputUri, library.canonicalUri, false);
+      }
     }
+    String libraryName =
+        (!compiler.enableMinification || backend.mustRetainLibraryNames) ?
+        library.getLibraryName() :
+        "";
     Map<OutputUnit, ClassBuilder> descriptors =
         elementDescriptors[library];
 
@@ -1285,7 +1327,7 @@ class CodeEmitterTask extends CompilerTask {
           outputBuffers.putIfAbsent(outputUnit, () => new CodeBuffer());
       int sizeBefore = outputBuffer.length;
       outputBuffers[outputUnit]
-          ..write('["${library.getLibraryName()}",$_')
+          ..write('["$libraryName",$_')
           ..write('"${uri}",$_')
           ..write(metadata == null ? "" : jsAst.prettyPrint(metadata, compiler))
           ..write(',$_')
@@ -1302,6 +1344,8 @@ class CodeEmitterTask extends CompilerTask {
 
   String assembleProgram() {
     measure(() {
+      invalidateCaches();
+
       // Compute the required type checks to know which classes need a
       // 'is$' method.
       typeTestEmitter.computeRequiredTypeChecks();
@@ -1445,22 +1489,24 @@ class CodeEmitterTask extends CompilerTask {
         List<Element> sortedElements =
             Elements.sortedByPosition(elementDescriptors.keys);
 
-        Iterable<Element> pendingStatics = sortedElements.where((element) {
-            return !element.isLibrary &&
-                elementDescriptors[element].values.any((descriptor) =>
-                    descriptor != null);
-        });
+        Iterable<Element> pendingStatics;
+        if (!compiler.hasIncrementalSupport) {
+          pendingStatics = sortedElements.where((element) {
+              return !element.isLibrary &&
+                  elementDescriptors[element].values.any((descriptor) =>
+                      descriptor != null);
+          });
 
-        pendingStatics.forEach((element) =>
-            compiler.reportInfo(
-                element, MessageKind.GENERIC, {'text': 'Pending statics.'}));
-
+          pendingStatics.forEach((element) =>
+              compiler.reportInfo(
+                  element, MessageKind.GENERIC, {'text': 'Pending statics.'}));
+        }
         for (LibraryElement library in sortedElements.where((element) =>
             element.isLibrary)) {
           writeLibraryDescriptors(library);
           elementDescriptors[library] = const {};
         }
-        if (!pendingStatics.isEmpty) {
+        if (pendingStatics != null && !pendingStatics.isEmpty) {
           compiler.internalError(pendingStatics.first,
               'Pending statics (see above).');
         }
@@ -1564,10 +1610,10 @@ class CodeEmitterTask extends CompilerTask {
         }
       }
 
-      emitMain(mainBuffer);
       jsAst.FunctionDeclaration precompiledFunctionAst =
           buildPrecompiledFunction();
       emitInitFunction(mainBuffer);
+      emitMain(mainBuffer);
       if (!compiler.deferredLoadTask.splitProgram) {
         mainBuffer.add('})()\n');
       } else {
@@ -1622,24 +1668,20 @@ class CodeEmitterTask extends CompilerTask {
       }
       emitDeferredCode();
 
+      if (backend.requiresPreamble &&
+          !backend.htmlLibraryIsLoaded) {
+        compiler.reportHint(NO_LOCATION_SPANNABLE, MessageKind.PREAMBLE);
+      }
     });
     return compiler.assembledCode;
   }
 
   String generateSourceMapTag(Uri sourceMapUri, Uri fileUri) {
     if (sourceMapUri != null && fileUri != null) {
-      // Using # is the new proposed standard. @ caused problems in Internet
-      // Explorer due to "Conditional Compilation Statements" in JScript,
-      // see:
-      // http://msdn.microsoft.com/en-us/library/7kx09ct1(v=vs.80).aspx
-      // About source maps, see:
-      // https://docs.google.com/a/google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit
-      // TODO(http://dartbug.com/11914): Remove @ line.
       String sourceMapFileName = relativize(fileUri, sourceMapUri, false);
       return '''
 
 //# sourceMappingURL=$sourceMapFileName
-//@ sourceMappingURL=$sourceMapFileName
 ''';
     }
     return '';
@@ -1754,5 +1796,18 @@ class CodeEmitterTask extends CompilerTask {
 
   void registerReadTypeVariable(TypeVariableElement element) {
     readTypeVariables.add(element);
+  }
+
+  void invalidateCaches() {
+    if (!compiler.hasIncrementalSupport) return;
+    if (cachedElements.isEmpty) return;
+    for (Element element in compiler.enqueuer.codegen.newlyEnqueuedElements) {
+      if (element.isInstanceMember) {
+        cachedClassBuilders.remove(element.enclosingClass);
+
+        nativeEmitter.cachedBuilders.remove(element.enclosingClass);
+
+      }
+    }
   }
 }

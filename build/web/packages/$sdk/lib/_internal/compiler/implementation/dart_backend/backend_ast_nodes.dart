@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// TODO(asgerf): Include metadata.
-// TODO(asgerf): Include cascade operator.
 library dart_printer;
 
 import '../dart2jslib.dart' as dart2js;
@@ -240,15 +238,14 @@ class VariableDeclaration extends Node {
 
 
 class FunctionDeclaration extends Statement {
-  final TypeAnnotation returnType;
-  final Parameters parameters;
-  final String name;
-  final Statement body;
+  final FunctionExpression function;
 
-  FunctionDeclaration(this.name,
-                      this.parameters,
-                      this.body,
-                      [ this.returnType ]);
+  TypeAnnotation get returnType => function.returnType;
+  Parameters get parameters => function.parameters;
+  String get name => function.name;
+  Statement get body => function.body;
+
+  FunctionDeclaration(this.function);
 }
 
 class Parameters extends Node {
@@ -276,7 +273,7 @@ class Parameter extends Node {
   /// Type of parameter, or return type of function parameter.
   final TypeAnnotation type;
 
-  final Expression defaultValue;
+  Expression defaultValue;
 
   /// Parameters to function parameter. Null for non-function parameters.
   final Parameters parameters;
@@ -295,15 +292,13 @@ class Parameter extends Node {
 
   /// True if this is a function parameter.
   bool get isFunction => parameters != null;
-
-  // TODO(asgerf): Support modifiers on parameters (final, ...).
 }
 
 // EXPRESSIONS
 
 class FunctionExpression extends Expression {
   final TypeAnnotation returnType;
-  final String name;
+  String name;
   final Parameters parameters;
   final Statement body;
 
@@ -330,6 +325,10 @@ class Conditional extends Expression {
 /// The unparser does not concern itself with scoping rules, and it is the
 /// responsibility of the AST creator to ensure that the identifier resolves
 /// to the proper definition.
+/// For the time being, this class is also used to reference static fields and
+/// top-level variables that are qualified with a class and/or library name,
+/// assuming the [element] is set. This is likely to change when the old backend
+/// is replaced.
 class Identifier extends Expression {
   final String name;
 
@@ -378,6 +377,29 @@ class LiteralSymbol extends Expression {
 
   /// [id] should not include the # symbol
   LiteralSymbol(this.id);
+}
+
+/// A type literal. This is distinct from [Identifier] since the unparser
+/// needs to this distinguish a static invocation from a method invocation
+/// on a type literal.
+class LiteralType extends Expression {
+  final String name;
+
+  types.DartType type;
+
+  LiteralType(this.name);
+}
+
+/// Reference to a type variable.
+/// This is distinct from [Identifier] since the unparser needs to this
+/// distinguish a function invocation `T()` from a type variable invocation
+/// `(T)()` (the latter is invalid, but must be generated anyway).
+class ReifyTypeVar extends Expression {
+  final String name;
+
+  elements.TypeVariableElement element;
+
+  ReifyTypeVar(this.name);
 }
 
 /// StringConcat is used in place of string interpolation and juxtaposition.
@@ -455,7 +477,7 @@ class CallStatic extends Expression {
   final String methodName;
   final List<Argument> arguments;
 
-  elements.FunctionElement element;
+  elements.Element element;
 
   CallStatic(this.className, this.methodName, this.arguments);
 }
@@ -579,6 +601,7 @@ const int ADDITIVE = 12;
 const int MULTIPLICATIVE = 13;
 const int UNARY = 14;
 const int POSTFIX_INCREMENT = 15;
+const int TYPE_LITERAL = 19;
 const int PRIMARY = 20;
 
 /// Precedence level required for the callee in a [FunctionCall].
@@ -685,7 +708,7 @@ class Unparser {
   }
 
   void writeOperator(String operator) {
-    write(" "); // TODO(asgerf): Minimize use of whitespace.
+    write(" "); // TODO(sigurdm,kmillikin): Minimize use of whitespace.
     write(operator);
     write(" ");
   }
@@ -725,9 +748,7 @@ class Unparser {
   /// Abusing terminology slightly, the function accepts a [Receiver] which
   /// may also be the [SuperReceiver] object.
   void writeExp(Receiver e, int minPrecedence, {beginStmt:false}) {
-    // TODO(asgerf):
-    //   Would there be a significant speedup using a Visitor or a method
-    //   on the AST instead of a chain of "if (e is T)" statements?
+    // TODO(kmillikin,sigurdm): it might be faster to use a Visitor.
     void withPrecedence(int actual, void action()) {
       if (actual < minPrecedence) {
         write("(");
@@ -759,8 +780,9 @@ class Unparser {
           write(e.name);
         }
         writeParameters(e.parameters);
-        if (stmt is Return) { // TODO(asgerf): Print {} for "return null;"
-          write('=> '); // TODO(asgerf): Minimize use of whitespace.
+        // TODO(sigurdm,kmillikin): Print {} for "return null;"
+        if (stmt is Return) {
+          write('=> ');
           writeExp(stmt.expression, EXPRESSION);
         } else {
           writeBlock(stmt);
@@ -772,7 +794,7 @@ class Unparser {
     } else if (e is Conditional) {
       withPrecedence(CONDITIONAL, () {
         writeExp(e.condition, LOGICAL_OR, beginStmt: beginStmt);
-        write(' ? '); // TODO(asgerf): Minimize use of whitespace.
+        write(' ? ');
         writeExp(e.thenExpression, EXPRESSION);
         write(' : ');
         writeExp(e.elseExpression, EXPRESSION);
@@ -805,7 +827,7 @@ class Unparser {
       }
     } else if (e is LiteralList) {
       if (e.isConst) {
-        write(' const '); // TODO(asgerf): Minimize use of whitespace.
+        write(' const ');
       }
       if (e.typeArgument != null) {
         write('<');
@@ -821,7 +843,7 @@ class Unparser {
       // are at the beginning of a statement.
       bool needParen = beginStmt;
       if (e.isConst) {
-        write(' const '); // TODO(asgerf): Minimize use of whitespace.
+        write(' const ');
         needParen = false;
       }
       if (e.typeArguments.length > 0) {
@@ -836,7 +858,7 @@ class Unparser {
       write('{');
       writeEach(',', e.entries, (LiteralMapEntry en) {
         writeExp(en.key, EXPRESSION);
-        write(' : '); // TODO(asgerf): Minimize use of whitespace.
+        write(' : ');
         writeExp(en.value, EXPRESSION);
       });
       write('}');
@@ -845,7 +867,15 @@ class Unparser {
       }
     } else if (e is LiteralSymbol) {
       write('#');
-      write(e.id); // TODO(asgerf): Do we need to escape something here?
+      write(e.id);
+    } else if (e is LiteralType) {
+      withPrecedence(TYPE_LITERAL, () {
+        write(e.name);
+      });
+    } else if (e is ReifyTypeVar) {
+      withPrecedence(PRIMARY, () {
+        write(e.name);
+      });
     } else if (e is StringConcat) {
       writeStringLiteral(e);
     } else if (e is UnaryOperator) {
@@ -864,7 +894,7 @@ class Unparser {
           operand is TypeOperator && operand.operator == 'is') {
         withPrecedence(RELATIONAL, () {
           writeExp(operand.expression, BITWISE_OR, beginStmt: beginStmt);
-          write(' is!'); // TODO(asgerf): Minimize use of whitespace.
+          write(' is!');
           writeType(operand.type);
         });
       }
@@ -930,7 +960,7 @@ class Unparser {
       });
     } else if (e is CallNew) {
       withPrecedence(CALLEE, () {
-        write(' '); // TODO(asgerf): Minimize use of whitespace.
+        write(' ');
         write(e.isConst ? 'const ' : 'new ');
         writeType(e.type);
         if (e.constructorName != null) {
@@ -1069,7 +1099,7 @@ class Unparser {
       write(')');
       writeStatement(stmt.body, shortIf: shortIf);
     } else if (stmt is DoWhile) {
-      write('do '); // TODO(asgerf): Minimize use of whitespace.
+      write('do ');
       writeStatement(stmt.body);
       write('while(');
       writeExp(stmt.condition, EXPRESSION);
@@ -1163,7 +1193,7 @@ class Unparser {
       writeParameters(stmt.parameters);
       Statement body = unfoldBlocks(stmt.body);
       if (body is Return) {
-        write('=> '); // TODO(asgerf): Minimize use of whitespace.
+        write('=> ');
         writeExp(body.expression, EXPRESSION);
         write(';');
       } else {
@@ -1235,8 +1265,19 @@ class Unparser {
     }
   }
 
+  /// A list of string quotings that the printer may use to quote strings.
+  // Ignore multiline quotings for now. Would need to make sure that no
+  // newline (potentially prefixed by whitespace) follows the quoting.
+  // TODO(sigurdm,kmillikin): Include multiline quotation schemes.
+  static const _QUOTINGS = const <tree.StringQuoting>[
+      const tree.StringQuoting(characters.$DQ, raw: false, leftQuoteLength: 1),
+      const tree.StringQuoting(characters.$DQ, raw: true, leftQuoteLength: 1),
+      const tree.StringQuoting(characters.$SQ, raw: false, leftQuoteLength: 1),
+      const tree.StringQuoting(characters.$SQ, raw: true, leftQuoteLength: 1),
+  ];
+
   static StringLiteralOutput analyzeStringLiteral(Expression node) {
-    // TODO(asgerf): This might be a bit too expensive. Benchmark.
+    // TODO(sigurdm,kmillikin): This might be a bit too expensive. Benchmark.
     // Flatten the StringConcat tree.
     List parts = []; // Expression or int (char node)
     void collectParts(Expression e) {
@@ -1277,11 +1318,7 @@ class Unparser {
     List<int> nonRaws = <int>[];
     List<int> sqs = <int>[];
     List<int> dqs = <int>[];
-    for (tree.StringQuoting q in tree.StringQuoting.mapping) {
-      // Ignore multiline quotings for now. Encoding of line breaks is unclear.
-      // TODO(asgerf): Include multiline quotation schemes.
-      if (q.leftQuoteCharCount >= 3)
-        continue;
+    for (tree.StringQuoting q in _QUOTINGS) {
       OpenStringChunk chunk = new OpenStringChunk(null, q, getQuoteCost(q));
       int index = best.length;
       best.add(chunk);

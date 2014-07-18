@@ -9,7 +9,7 @@ part of resolution;
  */
 class SignatureResolver extends MappingVisitor<ParameterElementX> {
   final ResolverVisitor resolver;
-  final Element enclosingElement;
+  final FunctionTypedElement enclosingElement;
   final Scope scope;
   final MessageKind defaultValuesError;
   Link<Element> optionalParameters = const Link<Element>();
@@ -19,7 +19,7 @@ class SignatureResolver extends MappingVisitor<ParameterElementX> {
   VariableDefinitions currentDefinitions;
 
   SignatureResolver(Compiler compiler,
-                    Element enclosingElement,
+                    FunctionTypedElement enclosingElement,
                     ResolutionRegistry registry,
                     {this.defaultValuesError})
       : this.enclosingElement = enclosingElement,
@@ -243,7 +243,7 @@ class SignatureResolver extends MappingVisitor<ParameterElementX> {
   static FunctionSignature analyze(Compiler compiler,
                                    NodeList formalParameters,
                                    Node returnNode,
-                                   Element element,
+                                   FunctionTypedElement element,
                                    ResolutionRegistry registry,
                                    {MessageKind defaultValuesError}) {
     SignatureResolver visitor = new SignatureResolver(compiler, element,
@@ -252,7 +252,15 @@ class SignatureResolver extends MappingVisitor<ParameterElementX> {
     int requiredParameterCount = 0;
     if (formalParameters == null) {
       if (!element.isGetter) {
-        compiler.reportError(element, MessageKind.MISSING_FORMALS);
+        if (element.isErroneous) {
+          // If the element is erroneous, an error should already have been
+          // reported. In the case of parse errors, it is possible that there
+          // are formal parameters, but something else in the method failed to
+          // parse. So we suppress the message about missing formals.
+          assert(invariant(element, compiler.compilationFailed));
+        } else {
+          compiler.reportError(element, MessageKind.MISSING_FORMALS);
+        }
       }
     } else {
       if (element.isGetter) {
@@ -292,12 +300,13 @@ class SignatureResolver extends MappingVisitor<ParameterElementX> {
     for (ParameterElement parameter in parameters) {
        parameterTypes.addLast(parameter.type);
     }
-    Link<DartType> optionalParameterTypes = const Link<DartType>();
-    Link<String> namedParameters = const Link<String>();
-    Link<DartType> namedParameterTypes = const Link<DartType>();
+    List<DartType> optionalParameterTypes = const <DartType>[];
+    List<String> namedParameters = const <String>[];
+    List<DartType> namedParameterTypes = const <DartType>[];
     List<Element> orderedOptionalParameters =
         visitor.optionalParameters.toList();
     if (visitor.optionalParametersAreNamed) {
+      // TODO(karlklose); replace when [visitor.optinalParameters] is a [List].
       orderedOptionalParameters.sort((Element a, Element b) {
           return a.name.compareTo(b.name);
       });
@@ -308,20 +317,23 @@ class SignatureResolver extends MappingVisitor<ParameterElementX> {
         namedParametersBuilder.addLast(parameter.name);
         namedParameterTypesBuilder.addLast(parameter.type);
       }
-      namedParameters = namedParametersBuilder.toLink();
-      namedParameterTypes = namedParameterTypesBuilder.toLink();
+      namedParameters = namedParametersBuilder.toLink().toList(growable: false);
+      namedParameterTypes = namedParameterTypesBuilder.toLink()
+          .toList(growable: false);
     } else {
+      // TODO(karlklose); replace when [visitor.optinalParameters] is a [List].
       LinkBuilder<DartType> optionalParameterTypesBuilder =
           new LinkBuilder<DartType>();
       for (ParameterElement parameter in visitor.optionalParameters) {
         optionalParameterTypesBuilder.addLast(parameter.type);
       }
-      optionalParameterTypes = optionalParameterTypesBuilder.toLink();
+      optionalParameterTypes = optionalParameterTypesBuilder.toLink()
+          .toList(growable: false);
     }
     FunctionType type = new FunctionType(
         element.declaration,
         returnType,
-        parameterTypes.toLink(),
+        parameterTypes.toLink().toList(growable: false),
         optionalParameterTypes,
         namedParameters,
         namedParameterTypes);

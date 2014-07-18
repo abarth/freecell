@@ -33,7 +33,8 @@ import 'elements/elements.dart' show
     PrefixElement,
     ClosureContainer,
     VoidElement,
-    TypedefElement;
+    TypedefElement,
+    AstElement;
 
 import 'util/util.dart' show
     Link;
@@ -55,6 +56,8 @@ import 'tree/tree.dart' as ast;
 import 'resolution/resolution.dart' show
     TreeElements,
     AnalyzableElementX;
+
+import "dart:math" show min;
 
 /// A "hunk" of the program that will be loaded whenever one of its [imports]
 /// are loaded.
@@ -294,7 +297,8 @@ class DeferredLoadTask extends CompilerTask {
   void _collectAllElementsAndConstantsResolvedFrom(
       Element element,
       Set<Element> elements,
-      Set<Constant> constants) {
+      Set<Constant> constants,
+      isMirrorUsage) {
 
     /// Recursively add the constant and its dependencies to [constants].
     void addConstants(Constant constant) {
@@ -311,13 +315,21 @@ class DeferredLoadTask extends CompilerTask {
     /// The collected dependent elements and constants are are added to
     /// [elements] and [constants] respectively.
     void collectDependencies(Element element) {
-      TreeElements treeElements = element is TypedefElement
-          ? element.treeElements
-          : compiler.enqueuer.resolution.getCachedElements(element);
+      // TODO(johnniwinther): Remove this when [AbstractFieldElement] has been
+      // removed.
+      if (element is! AstElement) return;
+      AstElement astElement = element;
 
       // TODO(sigurdm): We want to be more specific about this - need a better
       // way to query "liveness".
-      if (treeElements == null) return;
+      if (astElement is! TypedefElement &&
+          !compiler.enqueuer.resolution.hasBeenResolved(astElement)) {
+        return;
+      }
+
+      TreeElements treeElements = astElement.resolvedAst.elements;
+
+      assert(treeElements != null);
 
       for (Element dependency in treeElements.allElements) {
         if (Elements.isLocal(dependency) && !dependency.isFunction) continue;
@@ -344,10 +356,11 @@ class DeferredLoadTask extends CompilerTask {
     }
     if (element.isClass) {
       // If we see a class, add everything its live instance members refer
-      // to.  Static members are not relevant.
+      // to.  Static members are not relevant, unless we are processing
+      // extra dependencies due to mirrors.
       void addLiveInstanceMember(Element element) {
         if (!compiler.enqueuer.resolution.isLive(element)) return;
-        if (!element.isInstanceMember) return;
+        if (!isMirrorUsage && !element.isInstanceMember) return;
         collectDependencies(element.implementation);
       }
       ClassElement cls = element.declaration;
@@ -371,7 +384,7 @@ class DeferredLoadTask extends CompilerTask {
       ClassElement implementation =
           element.enclosingClass.implementation;
       _collectAllElementsAndConstantsResolvedFrom(
-          implementation, elements, constants);
+          implementation, elements, constants, isMirrorUsage);
     }
 
     // Other elements, in particular instance members, are ignored as
@@ -414,13 +427,16 @@ class DeferredLoadTask extends CompilerTask {
   /// Recursively traverses the graph of dependencies from [element], mapping
   /// deferred imports to each dependency it needs in the sets
   /// [_importedDeferredBy] and [_constantsDeferredBy].
-  void _mapDependencies(Element element, Import import) {
+  void _mapDependencies(Element element, Import import,
+                        {isMirrorUsage: false}) {
     Set<Element> elements = _importedDeferredBy.putIfAbsent(import,
         () => new Set<Element>());
     Set<Constant> constants = _constantsDeferredBy.putIfAbsent(import,
         () => new Set<Constant>());
 
-    if (elements.contains(element)) return;
+    // Only process elements once, unless we are doing dependencies due to
+    // mirrors, which are added in additional traversals.
+    if (!isMirrorUsage && elements.contains(element)) return;
     // Anything used directly by main will be loaded from the start
     // We do not need to traverse it again.
     if (import != _fakeMainImport && _mainElements.contains(element)) return;
@@ -432,7 +448,7 @@ class DeferredLoadTask extends CompilerTask {
 
     // This call can modify [_importedDeferredBy] and [_constantsDeferredBy].
     _collectAllElementsAndConstantsResolvedFrom(
-        element, dependentElements, constants);
+        element, dependentElements, constants, isMirrorUsage);
 
     LibraryElement library = element.library;
     for (Element dependency in dependentElements) {
@@ -457,8 +473,8 @@ class DeferredLoadTask extends CompilerTask {
       // asked isNeededForReflection. Instead an internal error is triggered.
       // So we have to filter them out here.
       if (element is AnalyzableElementX && !element.hasTreeElements) return;
-      if (compiler.backend.isNeededForReflection(element)) {
-        _mapDependencies(element, deferredImport);
+      if (compiler.backend.isAccessibleByReflection(element)) {
+        _mapDependencies(element, deferredImport, isMirrorUsage: true);
       }
     }
 
@@ -550,9 +566,21 @@ class DeferredLoadTask extends CompilerTask {
 
     void computeOutputUnitName(OutputUnit outputUnit) {
       if (generatedNames[outputUnit] != null) return;
-      String suggestedName = outputUnit.imports.map((import) {
+      Iterable<String> importNames = outputUnit.imports.map((import) {
         return importDeferName[import];
-      }).join('_');
+      });
+      String suggestedName = importNames.join('_');
+      // Avoid the name getting too long.
+      // Try to abbreviate the prefix-names
+      if (suggestedName.length > 15) {
+        suggestedName = importNames.map((name) {
+          return name.substring(0, min(2, name.length));
+        }).join('_');
+      }
+      // If this is still too long, truncate the whole name.
+      if (suggestedName.length > 15) {
+        suggestedName = suggestedName.substring(0, 15);
+      }
       outputUnit.name = makeUnique(suggestedName, usedOutputUnitNames);
       generatedNames[outputUnit] = outputUnit.name;
     }
@@ -659,6 +687,7 @@ class DeferredLoadTask extends CompilerTask {
   }
 
   void ensureMetadataResolved(Compiler compiler) {
+    if (compiler.mainApp == null) return;
     _allDeferredImports[_fakeMainImport] = compiler.mainApp;
     var lastDeferred;
     // When detecting duplicate prefixes of deferred libraries there are 4
@@ -681,7 +710,7 @@ class DeferredLoadTask extends CompilerTask {
     Setlet<String> usedPrefixes = new Setlet<String>();
     // The last deferred import we saw with a given prefix (if any).
     Map<String, Import> prefixDeferredImport = new Map<String, Import>();
-    for (LibraryElement library in compiler.libraries.values) {
+    for (LibraryElement library in compiler.libraryLoader.libraries) {
       compiler.withCurrentElement(library, () {
         prefixDeferredImport.clear();
         usedPrefixes.clear();
@@ -727,8 +756,7 @@ class DeferredLoadTask extends CompilerTask {
     }
     if (splitProgram && backend is DartBackend) {
       // TODO(sigurdm): Implement deferred loading for dart2dart.
-      splitProgram = false;
-      compiler.reportInfo(
+      compiler.reportFatalError(
           lastDeferred,
           MessageKind.DEFERRED_LIBRARY_DART_2_DART);
     }

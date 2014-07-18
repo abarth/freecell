@@ -82,6 +82,7 @@ class SendVisitor extends ResolvedVisitor {
     if (element == null) {
       collector.tryMakeMemberPlaceholder(node.selector);
     } else if (element.isErroneous) {
+      collector.makeUnresolvedPlaceholder(node);
       return;
     } else if (element.isPrefix) {
       // Node is prefix part in case of source 'lib.somesetter = 5;'
@@ -113,7 +114,7 @@ class SendVisitor extends ResolvedVisitor {
     collector.backend.registerStaticSend(element, node);
 
     if (Elements.isUnresolved(element)
-        || identical(element, compiler.assertMethod)
+        || elements.isAssert(node)
         || element.isDeferredLoaderGetter) {
       return;
     }
@@ -141,8 +142,15 @@ class SendVisitor extends ResolvedVisitor {
     collector.internalError(reason, node: node);
   }
 
-  visitTypeReferenceSend(Send node) {
+  visitTypePrefixSend(Send node) {
     collector.makeElementPlaceholder(node.selector, elements[node]);
+  }
+
+  visitTypeLiteralSend(Send node) {
+    DartType type = elements.getTypeLiteralType(node);
+    if (!type.isDynamic) {
+      collector.makeElementPlaceholder(node.selector, type.element);
+    }
   }
 }
 
@@ -255,7 +263,7 @@ class PlaceholderCollector extends Visitor {
 
   void tryMakeLocalPlaceholder(Element element, Identifier node) {
     bool isNamedOptionalParameter() {
-      FunctionElement function = element.enclosingElement;
+      FunctionTypedElement function = element.enclosingElement;
       FunctionSignature signature = function.functionSignature;
       if (!signature.optionalParametersAreNamed) return false;
       for (Element parameter in signature.optionalParameters) {

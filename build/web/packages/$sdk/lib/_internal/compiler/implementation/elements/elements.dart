@@ -129,6 +129,30 @@ class ElementKind {
   toString() => id;
 }
 
+/// Abstract interface for entities.
+///
+/// Implement this directly if the entity is not a Dart language entity.
+/// Entities defined within the Dart language should implement [Element].
+///
+/// For instance, the JavaScript backend need to create synthetic variables for
+/// calling intercepted classes and such variables do not correspond to an
+/// entity in the Dart source code nor in the terminology of the Dart language
+/// and should therefore implement [Entity] directly.
+abstract class Entity implements Spannable {
+  String get name;
+}
+
+// TODO(johnniwinther): Should [Local] have `enclosingFunction`, `isAssignable`
+// or `type`?
+/// An entity that defines a local variable (memory slot) in generated code.
+///
+/// Several [Element] can define local variable, for instance parameter, local
+/// variables and local functions and thus implement [Local]. For non-element
+/// locals, like `this` and boxes, specialized [Local] class are created.
+abstract class Local extends Entity {
+
+}
+
 /**
  * A declared element of a program.
  *
@@ -173,7 +197,7 @@ class ElementKind {
  * is best if the backends avoid setting state directly in elements.
  * It is better to keep such state in a table on the side.
  */
-abstract class Element implements Spannable {
+abstract class Element implements Entity {
   String get name;
   ElementKind get kind;
   Element get enclosingElement;
@@ -292,6 +316,10 @@ abstract class Element implements Spannable {
   bool get isAssignable;
   bool get isNative;
   bool get isDeferredLoaderGetter;
+
+  /// True if the element is declared in a patch library but has no
+  /// corresponding declaration in the origin library.
+  bool get isInjected;
 
   /// `true` if this element is a constructor, top level or local variable,
   /// or static field that is declared `const`.
@@ -525,6 +553,15 @@ class Elements {
     } else {
       return '$className\$${element.name}';
     }
+  }
+
+  static String constructorNameForDiagnostics(String className,
+                                              String constructorName) {
+    String classNameString = className;
+    String constructorNameString = constructorName;
+    return (constructorName == '')
+        ? classNameString
+        : "$classNameString.$constructorNameString";
   }
 
   /// Returns `true` if [name] is the name of an operator method.
@@ -795,7 +832,7 @@ abstract class LibraryElement extends Element
   Uri get canonicalUri;
   CompilationUnitElement get entryCompilationUnit;
   Link<CompilationUnitElement> get compilationUnits;
-  Link<LibraryTag> get tags;
+  Iterable<LibraryTag> get tags;
   LibraryName get libraryTag;
   Link<Element> get exports;
 
@@ -887,6 +924,14 @@ abstract class FieldElement extends VariableElement
 
 abstract class ParameterElement extends VariableElement
     implements FunctionTypedElement {
+  /// Use [functionDeclaration] instead.
+  @deprecated
+  get enclosingElement;
+
+  /// The function, typedef or inline function-typed parameter on which
+  /// this parameter is declared.
+  FunctionTypedElement get functionDeclaration;
+
   VariableDefinitions get node;
 }
 
@@ -998,6 +1043,10 @@ abstract class ConstructorElement extends FunctionElement {
   /// Class `E` has a synthesized constructor, `E.c`, whose defining constructor
   /// is `C.c`.
   ConstructorElement get definingConstructor;
+
+  /// Use [enclosingClass] instead.
+  @deprecated
+  get enclosingElement;
 }
 
 abstract class ConstructorBodyElement extends FunctionElement {
@@ -1043,7 +1092,7 @@ abstract class TypeDeclarationElement extends Element implements AstElement {
    * available until the type of the element has been computed through
    * [computeType].
    */
-  Link<DartType> get typeVariables;
+  List<DartType> get typeVariables;
 
   bool get isResolved;
 
@@ -1148,7 +1197,7 @@ abstract class ClassElement extends TypeDeclarationElement
 
   void forEachBackendMember(void f(Element member));
 
-  Link<DartType> computeTypeParameters(Compiler compiler);
+  List<DartType> computeTypeParameters(Compiler compiler);
 
   /// Looks up the member [name] in this class.
   Member lookupClassMember(Name name);
@@ -1174,6 +1223,7 @@ abstract class MixinApplicationElement extends ClassElement {
   void addConstructor(FunctionElement constructor);
 }
 
+// TODO(johnniwinther): Make this a pure [Entity].
 abstract class LabelElement extends Element {
   Label get label;
   String get labelName;
@@ -1187,7 +1237,8 @@ abstract class LabelElement extends Element {
   void setContinueTarget();
 }
 
-abstract class TargetElement extends Element {
+// TODO(johnniwinther): Make this a pure [Entity].
+abstract class TargetElement extends Element implements Local {
   Node get statement;
   int get nestingLevel;
   Link<LabelElement> get labels;
@@ -1207,6 +1258,14 @@ abstract class TargetElement extends Element {
 /// The [Element] for a type variable declaration on a generic class or typedef.
 abstract class TypeVariableElement extends Element
     implements AstElement, TypedElement {
+
+  /// Use [typeDeclaration] instead.
+  @deprecated
+  get enclosingElement;
+
+  /// The class or typedef on which this type variable is defined.
+  TypeDeclarationElement get typeDeclaration;
+
   /// The [type] defined by the type variable.
   TypeVariableType get type;
 
@@ -1227,7 +1286,7 @@ abstract class MetadataAnnotation implements Spannable {
 }
 
 /// An [Element] that has a type.
-abstract class TypedElement extends Element {
+abstract class TypedElement extends Element implements Local {
   DartType get type;
 }
 
@@ -1240,6 +1299,10 @@ abstract class FunctionTypedElement extends Element {
 
 /// An [Element] that holds a [TreeElements] mapping.
 abstract class AnalyzableElement extends Element {
+  /// Return `true` if [treeElements] have been (partially) computed for this
+  /// element.
+  bool get hasTreeElements;
+
   /// Returns the [TreeElements] that hold the resolution information for the
   /// AST nodes of this element.
   TreeElements get treeElements;
@@ -1249,7 +1312,26 @@ abstract class AnalyzableElement extends Element {
 ///
 /// Synthesized elements may return `null` from [node].
 abstract class AstElement extends AnalyzableElement {
+  /// `true` if [node] is available and non-null.
+  bool get hasNode;
+
+  /// The AST node of this element.
   Node get node;
+
+  /// `true` if [resolvedAst] is available.
+  bool get hasResolvedAst;
+
+  /// The defining AST node of this element with is corresponding
+  /// [TreeElements]. This is not available if [hasResolvedAst] is `false`.
+  ResolvedAst get resolvedAst;
+}
+
+class ResolvedAst {
+  final Element element;
+  final Node node;
+  final TreeElements elements;
+
+  ResolvedAst(this.element, this.node, this.elements);
 }
 
 /// A [MemberSignature] is a member of an interface.

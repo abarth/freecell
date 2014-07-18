@@ -90,6 +90,8 @@ abstract class NativeEnqueuerBase implements NativeEnqueuer {
   final Set<ClassElement> pendingClasses = new Set<ClassElement>();
   final Set<ClassElement> unusedClasses = new Set<ClassElement>();
 
+  final Set<LibraryElement> processedLibraries;
+
   bool hasInstantiatedNativeClasses() => !registeredClasses.isEmpty;
 
   final Set<ClassElement> nativeClassesAndSubclasses = new Set<ClassElement>();
@@ -121,12 +123,22 @@ abstract class NativeEnqueuerBase implements NativeEnqueuer {
   ClassElement _annotationJsNameClass;
 
   /// Subclasses of [NativeEnqueuerBase] are constructed by the backend.
-  NativeEnqueuerBase(this.world, this.compiler, this.enableLiveTypeAnalysis);
+  NativeEnqueuerBase(this.world, Compiler compiler, this.enableLiveTypeAnalysis)
+      : this.compiler = compiler,
+        processedLibraries = compiler.cacheStrategy.newSet();
+
+  JavaScriptBackend get backend => compiler.backend;
 
   void processNativeClasses(Iterable<LibraryElement> libraries) {
+    if (compiler.hasIncrementalSupport) {
+      // Since [Set.add] returns bool if an element was added, this restricts
+      // [libraries] to ones that haven't already been processed. This saves
+      // time during incremental compiles.
+      libraries = libraries.where(processedLibraries.add);
+    }
     libraries.forEach(processNativeClassesInLibrary);
-    if (compiler.isolateHelperLibrary != null) {
-      processNativeClassesInLibrary(compiler.isolateHelperLibrary);
+    if (backend.isolateHelperLibrary != null) {
+      processNativeClassesInLibrary(backend.isolateHelperLibrary);
     }
     processSubclassesOfNativeClasses(libraries);
     if (!enableLiveTypeAnalysis) {
@@ -287,7 +299,7 @@ abstract class NativeEnqueuerBase implements NativeEnqueuer {
   void findAnnotationClasses() {
     if (_annotationCreatesClass != null) return;
     ClassElement find(name) {
-      Element e = compiler.findHelper(name);
+      Element e = backend.findHelper(name);
       if (e == null || e is! ClassElement) {
         compiler.internalError(NO_LOCATION_SPANNABLE,
             "Could not find implementation class '${name}'.");
@@ -482,7 +494,7 @@ abstract class NativeEnqueuerBase implements NativeEnqueuer {
         } else if (type.element == compiler.boolClass) {
           world.registerInstantiatedClass(compiler.boolClass, registry);
         } else if (compiler.types.isSubtype(
-                      type, compiler.backend.listImplementation.rawType)) {
+                      type, backend.listImplementation.rawType)) {
           world.registerInstantiatedClass(type.element, registry);
         }
       }
@@ -509,13 +521,10 @@ abstract class NativeEnqueuerBase implements NativeEnqueuer {
 
   onFirstNativeClass() {
     staticUse(name) {
-      JavaScriptBackend backend = compiler.backend;
       backend.enqueue(
-          world, compiler.findHelper(name), compiler.globalDependencies);
+          world, backend.findHelper(name), compiler.globalDependencies);
     }
 
-    staticUse('dynamicFunction');
-    staticUse('dynamicSetMetadata');
     staticUse('defineProperty');
     staticUse('toStringForNativeObject');
     staticUse('hashCodeForNativeObject');
@@ -935,10 +944,8 @@ class NativeBehavior {
       // A function might be called from native code, passing us novel
       // parameters.
       _escape(functionType.returnType, compiler);
-      for (Link<DartType> parameters = functionType.parameterTypes;
-           !parameters.isEmpty;
-           parameters = parameters.tail) {
-        _capture(parameters.head, compiler);
+      for (DartType parameter in functionType.parameterTypes) {
+        _capture(parameter, compiler);
       }
     }
   }
@@ -951,10 +958,8 @@ class NativeBehavior {
     if (type is FunctionType) {
       FunctionType functionType = type;
       _capture(functionType.returnType, compiler);
-      for (Link<DartType> parameters = functionType.parameterTypes;
-           !parameters.isEmpty;
-           parameters = parameters.tail) {
-        _escape(parameters.head, compiler);
+      for (DartType parameter in functionType.parameterTypes) {
+        _escape(parameter, compiler);
       }
     } else {
       typesInstantiated.add(type);
@@ -1093,7 +1098,8 @@ void handleSsaNative(SsaBuilder builder, Expression nativeBody) {
   NativeEmitter nativeEmitter = builder.nativeEmitter;
   JavaScriptBackend backend = builder.backend;
 
-  HInstruction convertDartClosure(Element parameter, FunctionType type) {
+  HInstruction convertDartClosure(ParameterElement  parameter,
+                                  FunctionType type) {
     HInstruction local = builder.localsHandler.readLocal(parameter);
     Constant arityConstant =
         builder.constantSystem.createInt(type.computeArity());
